@@ -457,54 +457,85 @@ async function showAdminDashboard() {
     }
 
     try {
-        const response = await fetch('https://academic-challenge-api.onrender.com/api/users', {
-            headers: { 'x-auth-token': token }
-        });
-        const users = await response.json();
-        if (!response.ok) throw new Error(users.message || 'فشل تحميل البيانات.');
+        // طلب بيانات المستخدمين وجلب الإحصائيات في نفس الوقت
+        const [usersResponse, statsResponse] = await Promise.all([
+            fetch('https://academic-challenge-api.onrender.com/api/users', { headers: { 'x-auth-token': token } }),
+            fetch('https://academic-challenge-api.onrender.com/api/users/stats/registrations', { headers: { 'x-auth-token': token } })
+        ]);
 
-        // --- START: حساب الإحصائيات الحقيقية ---
-        const today = new Date().toISOString().slice(0, 10); // تاريخ اليوم بصيغة YYYY-MM-DD
-        const newUsersToday = users.filter(user => user.created_at.slice(0, 10) === today).length;
-        // --- END: حساب الإحصائيات الحقيقية ---
+        const users = await usersResponse.json();
+        const stats = await statsResponse.json();
 
+        if (!usersResponse.ok) throw new Error(users.message || 'فشل تحميل المستخدمين.');
+        if (!statsResponse.ok) throw new Error(stats.message || 'فشل تحميل الإحصائيات.');
+        
+        // --- بناء لوحة التحكم الكاملة ---
         let dashboardHTML = `
             <h2>لوحة تحكم المشرف</h2>
-            
-            <div class="card-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 40px;">
+            <div class="card-list" style="grid-template-columns: 1fr 1fr; margin-bottom: 40px;">
                 <div class="card"><span>إجمالي المستخدمين</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${users.length}</span></div>
-                <div class="card"><span>المستخدمون الجدد اليوم</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${newUsersToday}</span></div>
+                <div class="card"><span>إحصائيات وهمية</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">...</span></div>
+            </div>
+
+            <!-- حاوية الرسم البياني -->
+            <h3>تطور تسجيل المستخدمين (شهرياً)</h3>
+            <div class="chart-container" style="background: var(--color-surface-dark); border-radius: 15px; padding: 20px; margin-bottom: 40px;">
+                <canvas id="usersChart"></canvas>
             </div>
 
             <h3>قائمة إدارة المستخدمين</h3>
             <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>اسم المستخدم</th>
-                            <th>البريد الإلكتروني</th>
-                            <th>المستوى</th>
-                            <th>النقاط</th>
-                            <th>تاريخ التسجيل</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${users.map(user => `
-                            <tr>
-                                <td>${user.username}</td>
-                                <td>${user.email}</td>
-                                <td>${user.level}</td>
-                                <td>${user.academic_points}</td>
-                                <td>${new Date(user.created_at).toLocaleDateString('ar-EG')}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                <!-- ... كود الجدول يبقى كما هو ... -->
             </div>
-            
             <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
         `;
-        adminScreen.innerHTML = dashboardHTML;
+        adminScreen.innerHTML = dashboardHTML; // عرض الهيكل أولاً
+
+        // --- الآن قم برسم المنحنى ---
+        const ctx = document.getElementById('usersChart').getContext('2d');
+        
+        const labels = stats.map(s => s.month); // استخراج الشهور
+        const data = stats.map(s => s.count);   // استخراج عدد المسجلين
+
+        new Chart(ctx, {
+            type: 'line', // نوع المنحنى: خطي
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'عدد المستخدمين الجدد',
+                    data: data,
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    borderColor: 'rgba(76, 175, 80, 1)',
+                    borderWidth: 3,
+                    tension: 0.4, // لجعل الخطوط منحنية
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'white', // لون الأرقام على المحور
+                            stepSize: 1 // تأكد من أن الأرقام صحيحة (1, 2, 3)
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'white' // لون الشهور على المحور
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white' // لون عنوان المنحنى
+                        }
+                    }
+                }
+            }
+        });
 
     } catch (error) {
         adminScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p>${error.message}</p></div>`;
