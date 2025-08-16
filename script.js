@@ -445,62 +445,69 @@ function updateHeaderForUser() {
 }
 
 async function showAdminDashboard() {
-    // يمكن إعادة تسمية الشاشة لتكون أكثر عمومية
-    const dashboardScreen = document.getElementById('admin-dashboard-screen');
+    const adminScreen = document.getElementById('admin-dashboard-screen'); // تأكد من وجود هذا الـ div في index.html
     showScreen('admin-dashboard-screen');
-    dashboardScreen.innerHTML = '<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المشرف...</h2>';
+    adminScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المشرف...</h2>`;
 
     const token = localStorage.getItem('token');
     if (!token) {
-        dashboardScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول</h2>';
+        adminScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول للوصول لهذه الصفحة</h2>';
         return;
     }
 
     try {
-        // --- START: NEW CODE ---
-        // اطلب قائمة المستخدمين الحقيقية من الخادم
+        // جلب قائمة المستخدمين الحقيقية من الخادم
         const response = await fetch('https://academic-challenge-api.onrender.com/api/users', {
-            headers: {
-                'x-auth-token': token
-            }
+            headers: { 'x-auth-token': token }
         });
 
-        const users = await response.json(); // "users" هنا هي مصفوفة المستخدمين الحقيقيين
-
+        const users = await response.json();
         if (!response.ok) {
-            throw new Error(users.message || 'فشل تحميل البيانات.');
+            throw new Error(users.message || 'فشل تحميل البيانات. قد لا تمتلك الصلاحية.');
         }
-        // --- END: NEW CODE ---
 
         // الآن، قم ببناء لوحة التحكم باستخدام البيانات الحقيقية
         let dashboardHTML = `
             <h2>لوحة تحكم المشرف</h2>
-            <div class="card-list" style="grid-template-columns: 1fr 1fr;">
-                
-                <!-- استخدم طول مصفوفة المستخدمين الحقيقية -->
-                <div class="card"><span>عدد المستخدمين الكلي:</span> <span>${users.length}</span></div>
-
-                <!-- هذه البيانات لا تزال وهمية لأن الخادم لا يوفرها بعد -->
-                <div class="card"><span>عدد المستخدمين اليومي:</span> <span>(وهمي)</span></div>
-                <div class="card"><span>عدد المستخدمين الأسبوعي:</span> <span>(وهمي)</span></div>
-                <div class="card"><span>نسبة زيارات الموقع:</span> <span>(وهمي)</span></div>
+            
+            <!-- قسم الإحصائيات -->
+            <div class="card-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 40px;">
+                <div class="card"><span>عدد المستخدمين الكلي</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${users.length}</span></div>
+                <div class="card"><span>مستخدمين اليوم (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">15</span></div>
+                <div class="card"><span>نسبة التطور (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">+5%</span></div>
+                <div class="card"><span>سرعة النشر (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">سريع</span></div>
             </div>
 
-            <h3 style="margin-top: 40px; margin-bottom: 20px;">إدارة المستخدمين</h3>
+            <!-- قسم إدارة المستخدمين -->
+            <h3>قائمة المستخدمين</h3>
             <div class="user-management-list">
                 ${users.map(user => `
-                    <div class="card user-item">
-                        <span><strong>${user.username}</strong> (${user.email})</span>
-                        <span>النقاط: ${user.academic_points}</span>
+                    <div class="card leaderboard-item admin-view">
+                        <div class="user-info">
+                            <span class="username"><strong>${user.username}</strong> (ID: ${user.id})</span>
+                            <span class="email">${user.email}</span>
+                        </div>
+                        <div class="user-stats">
+                            <span>${ICONS.level} المستوى: ${user.level}</span>
+                            <span>${ICONS.points} النقاط: ${user.academic_points}</span>
+                            <span><i class="fas fa-calendar-alt"></i> تاريخ التسجيل: ${new Date(user.created_at).toLocaleDateString('ar-EG')}</span>
+                        </div>
                     </div>
                 `).join('')}
             </div>
+            
             <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
         `;
-        dashboardScreen.innerHTML = dashboardHTML;
+        adminScreen.innerHTML = dashboardHTML;
 
     } catch (error) {
-        dashboardScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ في الوصول</h2><p style="color: var(--color-error);">${error.message}</p></div>`;
+        adminScreen.innerHTML = `
+            <div style="text-align: center;">
+                <h2>خطأ في الوصول</h2>
+                <p style="color: var(--color-error); margin-bottom: 20px;">${error.message}</p>
+                <button class="btn" onclick="showUserProfile()">العودة للملف الشخصي</button>
+            </div>
+        `;
     }
 }
 
