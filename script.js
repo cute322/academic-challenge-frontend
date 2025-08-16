@@ -553,33 +553,20 @@ async function showAdminDashboard() {
 
 async function checkLoggedIn() {
     const token = localStorage.getItem('token');
-    if (!token) {
-        showScreen('welcome');
-        return;
-    }
+    if (!token) { showScreen('welcome'); return; }
     try {
-        const response = await fetch('https://academic-challenge-api.onrender.com/api/auth/me', {
-            headers: { 'x-auth-token': token }
-        });
+        const response = await fetch('https://academic-challenge-api.onrender.com/api/auth/me', { headers: { 'x-auth-token': token } });
         const data = await response.json();
-        if (!response.ok) {
-            localStorage.removeItem('token');
-            showScreen('welcome');
-            return;
-        }
+        if (!response.ok) { localStorage.removeItem('token'); showScreen('welcome'); return; }
         
-        // املأ بيانات gameState
         gameState.currentUser = data;
         gameState.totalAcademicPoints = data.academic_points;
         gameState.userLevel = data.level;
         gameState.unlockedModules = data.unlocked_modules || [];
-        
         updateHeaderForUser();
 
-        // اقرأ آخر شاشة محفوظة وانتقل إليها
         const lastScreen = localStorage.getItem('lastScreen') || 'institute';
         showScreen(lastScreen);
-
     } catch (error) {
         localStorage.removeItem('token');
         showScreen('welcome');
@@ -717,7 +704,6 @@ async function renderLeaderboardScreen() {
     showScreen('leaderboard');
     const leaderboardScreen = document.getElementById('leaderboard-screen');
     leaderboardScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل لوحة المتصدرين...</h2>`;
-
     try {
         const response = await fetch('https://academic-challenge-api.onrender.com/api/users/leaderboard');
         const topUsers = await response.json();
@@ -737,7 +723,7 @@ async function renderLeaderboardScreen() {
                     </div>
                 `).join('')}
             </div>
-            <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
+            <button class="btn" onclick="showUserProfile()">العودة للملف الشخصي</button>
         `;
     } catch (error) {
         leaderboardScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p>${error.message}</p></div>`;
@@ -924,48 +910,23 @@ function saveGameState() {
 }
 
 function showScreen(screenKey) {
-    // إخفاء جميع الشاشات أولاً
     Object.values(screens).forEach(s => s.classList.add('hidden'));
-
-    // إظهار الشاشة المطلوبة فقط إذا كانت موجودة
-    if (screens[screenKey]) {
-        screens[screenKey].classList.remove('hidden');
-    }
-
-    // --- START: NEW CODE (لحفظ آخر شاشة) ---
-    // نحن لا نريد حفظ الشاشات التي لا يجب أن تكون نقطة بداية،
-    // مثل شاشة الاختبار، أو شاشة الترحيب (لأن المستخدم سيكون قد سجل دخوله).
+    if (screens[screenKey]) screens[screenKey].classList.remove('hidden');
+    
     const screensToExclude = ['quiz', 'welcome'];
     if (!screensToExclude.includes(screenKey)) {
         localStorage.setItem('lastScreen', screenKey);
     }
-    // --- END: NEW CODE ---
-
-    // إظهار وإخفاء الشريط العلوي (Header) وشريط الاختبار (HUD) بناءً على الشاشة
+    
     const isFullScreen = (screenKey === 'welcome' || screenKey === 'quiz');
     appHeader.style.display = isFullScreen ? 'none' : 'flex';
     quizHud.classList.toggle('active', screenKey === 'quiz');
 
-    // تشغيل دوال العرض الخاصة بكل شاشة
     const renderFunction = {
-        'welcome': renderWelcomeScreen,
-        'institute': renderInstituteScreen,
-        'year': renderYearScreen,
-        'semester': renderSemesterScreen,
-        'course': renderCourseScreen,
-        'academicPath': renderAcademicPathScreen,
-        'quiz': displayQuestion,
-        'userProfile': showUserProfile, // تأكد من أن showUserProfile لا تستدعي showScreen مرة أخرى لتجنب حلقة لا نهائية
-        'adminDashboard': showAdminDashboard, // نفس الملاحظة هنا
-        'leaderboard': renderLeaderboardScreen // ونفس الملاحظة هنا
+        'welcome': renderWelcomeScreen, 'institute': renderInstituteScreen, 'year': renderYearScreen, 'semester': renderSemesterScreen, 'course': renderCourseScreen, 'academicPath': renderAcademicPathScreen, 'quiz': displayQuestion
     }[screenKey];
 
-    // استدعاء دالة العرض فقط إذا كانت موجودة،
-    // واستدعاء showUserProfile وغيرها يتم من خلال onclick، لذلك لا نحتاج لاستدعائها هنا مرة أخرى.
-    // هذا يمنع إعادة العرض غير الضرورية.
-    if (renderFunction && !['userProfile', 'adminDashboard', 'leaderboard'].includes(screenKey)) {
-        renderFunction();
-    }
+    if (renderFunction) renderFunction();
 }
 
 function renderWelcomeScreen() {
