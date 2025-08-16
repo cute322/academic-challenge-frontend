@@ -447,7 +447,7 @@ function updateHeaderForUser() {
 
 async function showAdminDashboard() {
     const adminScreen = document.getElementById('admin-dashboard-screen');
-    showScreen('adminDashboard'); // استخدم الاسم الصحيح للشاشة
+    showScreen('adminDashboard'); // استخدم الاسم الصحيح للشاشة الذي عرفناه للتو
     adminScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المشرف...</h2>`;
 
     const token = localStorage.getItem('token');
