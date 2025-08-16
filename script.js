@@ -260,7 +260,8 @@ const screens = {
     quiz: document.getElementById('quiz-screen'),
     userProfile: document.getElementById('user-profile-screen'),
     developerDashboard: document.getElementById('developer-dashboard-screen'),
-    leaderboard: document.getElementById('leaderboard-screen') // New screen reference
+    leaderboard: document.getElementById('leaderboard-screen'), // New screen reference
+    adminDashboard: document.getElementById('admin-dashboard-screen')
 };
 const quizHud = document.getElementById('quiz-hud');
 const attemptsContainer = document.getElementById('attempts-container');
@@ -445,18 +446,17 @@ function updateHeaderForUser() {
 }
 
 async function showAdminDashboard() {
-    const adminScreen = document.getElementById('admin-dashboard-screen'); // تأكد من وجود هذا الـ div في index.html
-    showScreen('admin-dashboard-screen');
+    const adminScreen = document.getElementById('admin-dashboard-screen');
+    showScreen('adminDashboard'); // استخدم الاسم الصحيح للشاشة
     adminScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المشرف...</h2>`;
 
     const token = localStorage.getItem('token');
     if (!token) {
-        adminScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول للوصول لهذه الصفحة</h2>';
+        adminScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول</h2>';
         return;
     }
 
     try {
-        // جلب قائمة المستخدمين الحقيقية من الخادم
         const response = await fetch('https://academic-challenge-api.onrender.com/api/users', {
             headers: { 'x-auth-token': token }
         });
@@ -466,19 +466,14 @@ async function showAdminDashboard() {
             throw new Error(users.message || 'فشل تحميل البيانات. قد لا تمتلك الصلاحية.');
         }
 
-        // الآن، قم ببناء لوحة التحكم باستخدام البيانات الحقيقية
         let dashboardHTML = `
             <h2>لوحة تحكم المشرف</h2>
             
-            <!-- قسم الإحصائيات -->
             <div class="card-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 40px;">
                 <div class="card"><span>عدد المستخدمين الكلي</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${users.length}</span></div>
                 <div class="card"><span>مستخدمين اليوم (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">15</span></div>
-                <div class="card"><span>نسبة التطور (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">+5%</span></div>
-                <div class="card"><span>سرعة النشر (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">سريع</span></div>
             </div>
 
-            <!-- قسم إدارة المستخدمين -->
             <h3>قائمة المستخدمين</h3>
             <div class="user-management-list">
                 ${users.map(user => `
@@ -488,9 +483,8 @@ async function showAdminDashboard() {
                             <span class="email">${user.email}</span>
                         </div>
                         <div class="user-stats">
-                            <span>${ICONS.level} المستوى: ${user.level}</span>
-                            <span>${ICONS.points} النقاط: ${user.academic_points}</span>
-                            <span><i class="fas fa-calendar-alt"></i> تاريخ التسجيل: ${new Date(user.created_at).toLocaleDateString('ar-EG')}</span>
+                            <span><i class="fas fa-graduation-cap"></i> المستوى: ${user.level}</span>
+                            <span><i class="fas fa-star"></i> النقاط: ${user.academic_points}</span>
                         </div>
                     </div>
                 `).join('')}
