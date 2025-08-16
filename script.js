@@ -443,63 +443,117 @@ function updateHeaderForUser() {
     document.querySelector('#user-level').innerHTML = `${ICONS.level}<span>المستوى ${gameState.userLevel}</span>`;
     document.getElementById('academic-points').innerHTML = `${ICONS.points}<span>${gameState.totalAcademicPoints}</span>`;
 }
+
 async function showAdminDashboard() {
-    const adminScreen = screens.leaderboard; // Re-using leaderboard screen element for simplicity
-    showScreen('leaderboard'); // Show the screen element
-    adminScreen.innerHTML = '<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المستخدمين...</h2>';
+    // يمكن إعادة تسمية الشاشة لتكون أكثر عمومية
+    const dashboardScreen = document.getElementById('admin-dashboard-screen');
+    showScreen('admin-dashboard-screen');
+    dashboardScreen.innerHTML = '<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المشرف...</h2>';
 
     const token = localStorage.getItem('token');
     if (!token) {
-        adminScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول للوصول لهذه الصفحة</h2>';
+        dashboardScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول</h2>';
         return;
     }
 
     try {
+        // --- START: NEW CODE ---
+        // اطلب قائمة المستخدمين الحقيقية من الخادم
         const response = await fetch('https://academic-challenge-api.onrender.com/api/users', {
             headers: {
                 'x-auth-token': token
             }
         });
 
-        const users = await response.json();
+        const users = await response.json(); // "users" هنا هي مصفوفة المستخدمين الحقيقيين
 
         if (!response.ok) {
-            // If access is denied (because user is not admin), this message will show
-            throw new Error(users.message || 'فشل تحميل البيانات. قد لا تمتلك الصلاحية.');
+            throw new Error(users.message || 'فشل تحميل البيانات.');
         }
+        // --- END: NEW CODE ---
 
-        // If the request is successful, build the user list
-        let usersHTML = `
-            <h2>لوحة تحكم المشرف (${users.length} مستخدم)</h2>
-            <div class="leaderboard-list">
+        // الآن، قم ببناء لوحة التحكم باستخدام البيانات الحقيقية
+        let dashboardHTML = `
+            <h2>لوحة تحكم المشرف</h2>
+            <div class="card-list" style="grid-template-columns: 1fr 1fr;">
+                
+                <!-- استخدم طول مصفوفة المستخدمين الحقيقية -->
+                <div class="card"><span>عدد المستخدمين الكلي:</span> <span>${users.length}</span></div>
+
+                <!-- هذه البيانات لا تزال وهمية لأن الخادم لا يوفرها بعد -->
+                <div class="card"><span>عدد المستخدمين اليومي:</span> <span>(وهمي)</span></div>
+                <div class="card"><span>عدد المستخدمين الأسبوعي:</span> <span>(وهمي)</span></div>
+                <div class="card"><span>نسبة زيارات الموقع:</span> <span>(وهمي)</span></div>
+            </div>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">إدارة المستخدمين</h3>
+            <div class="user-management-list">
                 ${users.map(user => `
-                    <div class="card leaderboard-item admin-view">
-                        <div class="user-info">
-                            <span class="username">${user.username} (ID: ${user.id})</span>
-                            <span class="email">${user.email}</span>
-                        </div>
-                        <div class="user-stats">
-                            <span>${ICONS.level} المستوى: ${user.level}</span>
-                            <span>${ICONS.points} النقاط: ${user.academic_points}</span>
-                        </div>
+                    <div class="card user-item">
+                        <span><strong>${user.username}</strong> (${user.email})</span>
+                        <span>النقاط: ${user.academic_points}</span>
                     </div>
                 `).join('')}
             </div>
-            <button class="btn" style="margin-top: 20px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
+            <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
         `;
-        adminScreen.innerHTML = usersHTML;
+        dashboardScreen.innerHTML = dashboardHTML;
 
     } catch (error) {
-        adminScreen.innerHTML = `
-            <div style="text-align: center;">
-                <h2>خطأ في الوصول</h2>
-                <p style="color: var(--color-error); margin-bottom: 20px;">${error.message}</p>
-                <button class="btn" onclick="showUserProfile()">العودة للملف الشخصي</button>
-            </div>
-        `;
-        console.error('Failed to fetch users:', error);
+        dashboardScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ في الوصول</h2><p style="color: var(--color-error);">${error.message}</p></div>`;
     }
-} 
+}
+
+async function checkLoggedIn() {
+    // 1. ابحث عن التوكن في الذاكرة الدائمة للمتصفح
+    const token = localStorage.getItem('token');
+
+    // 2. إذا لم يتم العثور على توكن، لا تفعل شيئاً
+    if (!token) {
+        console.log("No token found. User is not logged in.");
+        updateHeaderForUser(); // تأكد من عرض "تسجيل الدخول"
+        showScreen('welcome');
+        return;
+    }
+
+    // 3. إذا وجدنا توكن، أرسله للخادم للتأكد من صلاحيته وجلب بيانات المستخدم
+    try {
+        const response = await fetch('https://academic-challenge-api.onrender.com/api/auth/me', {
+            method: 'GET',
+            headers: {
+                'x-auth-token': token
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // إذا كان التوكن قديماً أو غير صالح، احذفه
+            localStorage.removeItem('token');
+            throw new Error("Session expired. Please log in again.");
+        }
+
+        // 4. إذا كان التوكن صالحاً، قم بتسجيل دخول المستخدم تلقائياً
+        gameState.currentUser = data; // الخادم يعيد بيانات المستخدم
+        gameState.totalAcademicPoints = data.academic_points;
+        gameState.userLevel = data.level;
+        gameState.unlockedModules = data.unlocked_modules || [];
+        gameState.isDeveloper = (data.role === 'developer');
+
+        console.log("User successfully logged in from saved session.");
+        updateHeaderForUser();
+        showScreen('institute'); // اذهب مباشرة إلى الشاشة الرئيسية
+
+    } catch (error) {
+        console.error(error.message);
+        // في حال وجود أي خطأ، نظّف الحالة
+        localStorage.removeItem('token');
+        gameState.currentUser = null;
+        updateHeaderForUser();
+        showScreen('welcome');
+    }
+}
+
 function showUserProfile() {
     if (!gameState.currentUser) {
         showAuthModal('login');
@@ -815,22 +869,7 @@ async function submitComment() {
 
 // --- Core App Logic (Remains largely the same, with minor adjustments) ---
 function initializeApp() {
-    const savedGameState = localStorage.getItem('academicChallengeGameState');
-    if (savedGameState) {
-        const loadedState = JSON.parse(savedGameState);
-        // Only load relevant user-specific data
-        gameState.currentUser = loadedState.currentUser;
-        gameState.isDeveloper = loadedState.isDeveloper;
-        gameState.totalAcademicPoints = loadedState.totalAcademicPoints;
-        gameState.userLevel = loadedState.userLevel;
-        gameState.unlockedModules = loadedState.unlockedModules;
-        // Also load mockUsers and mockComments if they were saved (for developer/comments persistence)
-        if (loadedState.mockUsers) gameState.mockUsers = loadedState.mockUsers;
-        if (loadedState.mockComments) mockComments = loadedState.mockComments;
-    }
-
-    updateHeaderForUser();
-    showScreen('welcome');
+    checkLoggedIn(); // بدلاً من إظهار شاشة الترحيب، تحقق أولاً من حالة تسجيل الدخول
 }
 
 function saveGameState() {
@@ -892,12 +931,13 @@ function renderInstituteScreen() {
     }
     appHeader.style.display = 'flex';
     screens.institute.innerHTML = `
-        <h2>اختر المعهد</h2>
+        <h2>اختر تخصص</h2>
         <div class="card-list">
-            <div class="card" onclick="showScreen('year')"><span>معهد العلوم الإنسانية</span></div>
-            <div class="card locked"><span>معهد العلوم الاجتماعية</span>${ICONS.lock}</div>
-            <div class="card locked"><span>معهد الحقوق والعلوم السياسية</span>${ICONS.lock}</div>
-            <div class="card locked"><span>معهد العلوم والتكنولوجيا</span>${ICONS.lock}</div>
+            <div class="card" onclick="showScreen('year')"><span>تخصص العلوم الإنسانية</span></div>
+            <div class="card locked"><span>تخصص العلوم الاجتماعية</span>${ICONS.lock}</div>
+            <div class="card locked"><span>تخصص الحقوق والعلوم السياسية</span>${ICONS.lock}</div>
+            <div class="card locked"><span>تخصص العلوم والتكنولوجيا</span>${ICONS.lock}</div>
+            <div class="card locked"><span>تخصص العلوم الاقتصادية</span>${ICONS.lock}</div>
         </div>`;
 }
 
@@ -917,8 +957,8 @@ function renderSemesterScreen() {
     screens.semester.innerHTML = `
         <h2>اختر السداسي</h2>
         <div class="card-list">
-            <div class="card" onclick="showScreen('course')"><span>السداسي الثاني</span></div>
             <div class="card locked"><span>السداسي الأول</span>${ICONS.lock}</div>
+            <div class="card" onclick="showScreen('course')"><span>السداسي الثاني</span></div>
         </div>`;
 }
 
