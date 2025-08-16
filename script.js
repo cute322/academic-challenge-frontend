@@ -443,30 +443,97 @@ function updateHeaderForUser() {
     document.querySelector('#user-level').innerHTML = `${ICONS.level}<span>المستوى ${gameState.userLevel}</span>`;
     document.getElementById('academic-points').innerHTML = `${ICONS.points}<span>${gameState.totalAcademicPoints}</span>`;
 }
+async function showAdminDashboard() {
+    const adminScreen = screens.leaderboard; // Re-using leaderboard screen element for simplicity
+    showScreen('leaderboard'); // Show the screen element
+    adminScreen.innerHTML = '<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المستخدمين...</h2>';
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+        adminScreen.innerHTML = '<h2>خطأ: يجب تسجيل الدخول للوصول لهذه الصفحة</h2>';
+        return;
+    }
+
+    try {
+        const response = await fetch('https://academic-challenge-api.onrender.com/api/users', {
+            headers: {
+                'x-auth-token': token
+            }
+        });
+
+        const users = await response.json();
+
+        if (!response.ok) {
+            // If access is denied (because user is not admin), this message will show
+            throw new Error(users.message || 'فشل تحميل البيانات. قد لا تمتلك الصلاحية.');
+        }
+
+        // If the request is successful, build the user list
+        let usersHTML = `
+            <h2>لوحة تحكم المشرف (${users.length} مستخدم)</h2>
+            <div class="leaderboard-list">
+                ${users.map(user => `
+                    <div class="card leaderboard-item admin-view">
+                        <div class="user-info">
+                            <span class="username">${user.username} (ID: ${user.id})</span>
+                            <span class="email">${user.email}</span>
+                        </div>
+                        <div class="user-stats">
+                            <span>${ICONS.level} المستوى: ${user.level}</span>
+                            <span>${ICONS.points} النقاط: ${user.academic_points}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn" style="margin-top: 20px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
+        `;
+        adminScreen.innerHTML = usersHTML;
+
+    } catch (error) {
+        adminScreen.innerHTML = `
+            <div style="text-align: center;">
+                <h2>خطأ في الوصول</h2>
+                <p style="color: var(--color-error); margin-bottom: 20px;">${error.message}</p>
+                <button class="btn" onclick="showUserProfile()">العودة للملف الشخصي</button>
+            </div>
+        `;
+        console.error('Failed to fetch users:', error);
+    }
+} 
 function showUserProfile() {
     if (!gameState.currentUser) {
         showAuthModal('login');
         return;
     }
-    appHeader.style.display = 'flex';
+
+    // --- START: NEW CODE ---
+    // تحقق إذا كان المستخدم الحالي مشرفاً
+    const isAdmin = gameState.currentUser.role === 'admin';
+    
+    // قم بإنشاء كود HTML الخاص بزر المشرف فقط إذا كان الشرط صحيحاً
+    const adminButtonHTML = isAdmin 
+        ? `<div class="card" onclick="showAdminDashboard()"><span>لوحة تحكم المشرف</span> ${ICONS.dashboard}</div>` 
+        : ''; // إذا لم يكن مشرفاً، لا تضف أي شيء
+    // --- END: NEW CODE ---
+
     screens.userProfile.innerHTML = `
         <h2>الملف الشخصي</h2>
         <div class="card-list" style="grid-template-columns: 1fr;">
             <div class="card"><span>البريد الإلكتروني:</span> <span>${gameState.currentUser.email}</span></div>
-            <div class="card"><span>الاسم:</span> <span>${gameState.currentUser.username}</span></div> <!-- تصحيح هنا -->
+            <div class="card"><span>الاسم:</span> <span>${gameState.currentUser.username}</span></div>
             <div class="card"><span>المستوى الأكاديمي:</span> <span>${gameState.userLevel}</span></div>
             <div class="card"><span>النقاط الأكاديمية:</span> <span>${gameState.totalAcademicPoints}</span></div>
+            
+            ${adminButtonHTML} <!-- هنا سيتم وضع زر المشرف (أو سيترك فارغاً) -->
+
             <div class="card" onclick="showCommentsModal()"><span>التعليقات والملاحظات</span> ${ICONS.comment}</div>
             <div class="card" onclick="renderLeaderboardScreen()"><span>لوحة المتصدرين</span> ${ICONS.leaderboard}</div>
-            ${gameState.isDeveloper ? `<div class="card" onclick="showDeveloperDashboard()"><span>لوحة تحكم المطور</span> ${ICONS.dashboard}</div>` : ''}
             <button class="btn" onclick="logoutUser()">تسجيل الخروج</button>
             <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 15px;" onclick="showScreen('institute')">العودة للرئيسية</button>
         </div>
     `;
     showScreen('userProfile');
 }
-
 function logoutUser() {
     // Save current user state to mockUsers before logging out (for persistence in mock)
     if (gameState.currentUser) {
