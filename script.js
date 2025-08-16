@@ -447,7 +447,7 @@ function updateHeaderForUser() {
 
 async function showAdminDashboard() {
     const adminScreen = document.getElementById('admin-dashboard-screen');
-    showScreen('adminDashboard'); // استخدم الاسم الصحيح للشاشة الذي عرفناه للتو
+    showScreen('adminDashboard');
     adminScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل بيانات المشرف...</h2>`;
 
     const token = localStorage.getItem('token');
@@ -460,34 +460,46 @@ async function showAdminDashboard() {
         const response = await fetch('https://academic-challenge-api.onrender.com/api/users', {
             headers: { 'x-auth-token': token }
         });
-
         const users = await response.json();
-        if (!response.ok) {
-            throw new Error(users.message || 'فشل تحميل البيانات. قد لا تمتلك الصلاحية.');
-        }
+        if (!response.ok) throw new Error(users.message || 'فشل تحميل البيانات.');
+
+        // --- START: حساب الإحصائيات الحقيقية ---
+        const today = new Date().toISOString().slice(0, 10); // تاريخ اليوم بصيغة YYYY-MM-DD
+        const newUsersToday = users.filter(user => user.created_at.slice(0, 10) === today).length;
+        // --- END: حساب الإحصائيات الحقيقية ---
 
         let dashboardHTML = `
             <h2>لوحة تحكم المشرف</h2>
             
             <div class="card-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 40px;">
-                <div class="card"><span>عدد المستخدمين الكلي</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${users.length}</span></div>
-                <div class="card"><span>مستخدمين اليوم (وهمي)</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">15</span></div>
+                <div class="card"><span>إجمالي المستخدمين</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${users.length}</span></div>
+                <div class="card"><span>المستخدمون الجدد اليوم</span> <span style="font-size: 1.5rem; color: var(--color-accent-gold);">${newUsersToday}</span></div>
             </div>
 
-            <h3>قائمة المستخدمين</h3>
-            <div class="user-management-list">
-                ${users.map(user => `
-                    <div class="card leaderboard-item admin-view">
-                        <div class="user-info">
-                            <span class="username"><strong>${user.username}</strong> (ID: ${user.id})</span>
-                            <span class="email">${user.email}</span>
-                        </div>
-                        <div class="user-stats">
-                            <span><i class="fas fa-graduation-cap"></i> المستوى: ${user.level}</span>
-                            <span><i class="fas fa-star"></i> النقاط: ${user.academic_points}</span>
-                        </div>
-                    </div>
-                `).join('')}
+            <h3>قائمة إدارة المستخدمين</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>اسم المستخدم</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>المستوى</th>
+                            <th>النقاط</th>
+                            <th>تاريخ التسجيل</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td>${user.username}</td>
+                                <td>${user.email}</td>
+                                <td>${user.level}</td>
+                                <td>${user.academic_points}</td>
+                                <td>${new Date(user.created_at).toLocaleDateString('ar-EG')}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
             </div>
             
             <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
@@ -495,13 +507,7 @@ async function showAdminDashboard() {
         adminScreen.innerHTML = dashboardHTML;
 
     } catch (error) {
-        adminScreen.innerHTML = `
-            <div style="text-align: center;">
-                <h2>خطأ في الوصول</h2>
-                <p style="color: var(--color-error); margin-bottom: 20px;">${error.message}</p>
-                <button class="btn" onclick="showUserProfile()">العودة للملف الشخصي</button>
-            </div>
-        `;
+        adminScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p>${error.message}</p></div>`;
     }
 }
 
@@ -682,28 +688,35 @@ function renderUserErrorsScreen() {
 }
 
 // --- New Leaderboard Screen ---
-function renderLeaderboardScreen() {
-    if (!gameState.currentUser) {
-        showAuthModal('login');
-        return;
-    }
-    appHeader.style.display = 'flex';
-    // Sort users by academic points in descending order
-    const sortedUsers = [...gameState.mockUsers].sort((a, b) => b.academicPoints - a.academicPoints);
-
-    screens.leaderboard.innerHTML = `
-        <h2>لوحة المتصدرين</h2>
-        <div class="card-list" style="grid-template-columns: 1fr;">
-            ${sortedUsers.map((user, index) => `
-                <div class="card leaderboard-item">
-                    <span>${index + 1}. ${user.name}</span>
-                    <span>المستوى: ${user.level} | النقاط: ${user.academicPoints} ${ICONS.points}</span>
-                </div>
-            `).join('')}
-        </div>
-        <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
-    `;
+async function renderLeaderboardScreen() {
     showScreen('leaderboard');
+    const leaderboardScreen = document.getElementById('leaderboard-screen');
+    leaderboardScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل لوحة المتصدرين...</h2>`;
+
+    try {
+        const response = await fetch('https://academic-challenge-api.onrender.com/api/users/leaderboard');
+        const topUsers = await response.json();
+        if (!response.ok) throw new Error('فشل تحميل البيانات');
+
+        leaderboardScreen.innerHTML = `
+            <h2>${ICONS.leaderboard} لوحة المتصدرين</h2>
+            <div class="leaderboard-list">
+                ${topUsers.map((user, index) => `
+                    <div class="card leaderboard-item">
+                        <span class="rank">${index + 1}</span>
+                        <span class="username">${user.username}</span>
+                        <div class="user-stats">
+                            <span>${ICONS.level} المستوى: ${user.level}</span>
+                            <span>${ICONS.points} النقاط: ${user.academic_points}</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
+        `;
+    } catch (error) {
+        leaderboardScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p>${error.message}</p></div>`;
+    }
 }
 
 
@@ -919,9 +932,17 @@ function showScreen(screenKey) {
 function renderWelcomeScreen() {
     appHeader.style.display = 'none';
     screens.welcome.innerHTML = `
-        <h1 style="margin-bottom: 20px;">التحدي الأكاديمي</h1>
-        <p class="screen-description">بيئة تعلم تفاعلية لتحقيق التفوق الجامعي.</p>
-        <button class="btn" style="padding: 20px 40px;" onclick="showAuthModal('login')">ابدأ رحلتك الأكاديمية</button>
+        <div class="welcome-content">
+            <div class="logo">${ICONS.level}</div>
+            <h1>منصة التحدي الأكاديمي</h1>
+            <p class="screen-description">بوابتك التفاعلية للتفوق في مسيرتك الجامعية. تعلم، اختبر معلوماتك، وتصدر قائمة المتفوقين.</p>
+            <div class="features-grid">
+                <div class="feature-item"><i class="fas fa-book-open"></i> محتوى متخصص</div>
+                <div class="feature-item"><i class="fas fa-question-circle"></i> اختبارات تفاعلية</div>
+                <div class="feature-item"><i class="fas fa-trophy"></i> تنافس وتصدر</div>
+            </div>
+            <button class="btn" onclick="showAuthModal('login')">ابدأ رحلتك الآن</button>
+        </div>
     `;
 }
 
