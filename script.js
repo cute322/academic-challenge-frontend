@@ -398,7 +398,7 @@ async function handleAuthSubmit(mode) {
     const body = mode === 'login' ? { email, password } : { username, email, password };
 
     try {
-        const response = await fetch(`http://localhost:5000/api/auth/${endpoint}`, {
+        const response = await fetch(`https://academic-challenge-api.onrender.com/api/auth/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -613,7 +613,7 @@ async function renderComments() {
     try {
         // Mocking backend call for comments
         // In a real app, this would be:
-        // const response = await fetch('http://localhost:5000/api/comments');
+        // const response = await fetch('https://academic-challenge-api.onrender.com/api/comments');
         // if (!response.ok) { throw new Error('فشل تحميل التعليقات'); }
         // const comments = await response.json();
         const comments = [...mockComments].reverse(); // Display newest first for mock
@@ -666,7 +666,7 @@ async function updateUserProgressOnServer() {
         
         // In a real app:
         /*
-        const response = await fetch('http://localhost:5000/api/users/progress', {
+        const response = await fetch('https://academic-challenge-api.onrender.com/api/users/progress', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -719,7 +719,7 @@ async function submitComment() {
         // In a real app:
         /*
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/comments', {
+        const response = await fetch('https://academic-challenge-api.onrender.com/api/comments', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
