@@ -512,51 +512,36 @@ async function showAdminDashboard() {
 }
 
 async function checkLoggedIn() {
-    // 1. ابحث عن التوكن في الذاكرة الدائمة للمتصفح
     const token = localStorage.getItem('token');
-
-    // 2. إذا لم يتم العثور على توكن، لا تفعل شيئاً
     if (!token) {
-        console.log("No token found. User is not logged in.");
-        updateHeaderForUser(); // تأكد من عرض "تسجيل الدخول"
         showScreen('welcome');
         return;
     }
-
-    // 3. إذا وجدنا توكن، أرسله للخادم للتأكد من صلاحيته وجلب بيانات المستخدم
     try {
         const response = await fetch('https://academic-challenge-api.onrender.com/api/auth/me', {
-            method: 'GET',
-            headers: {
-                'x-auth-token': token
-            }
+            headers: { 'x-auth-token': token }
         });
-
         const data = await response.json();
-
         if (!response.ok) {
-            // إذا كان التوكن قديماً أو غير صالح، احذفه
             localStorage.removeItem('token');
-            throw new Error("Session expired. Please log in again.");
+            showScreen('welcome');
+            return;
         }
-
-        // 4. إذا كان التوكن صالحاً، قم بتسجيل دخول المستخدم تلقائياً
-        gameState.currentUser = data; // الخادم يعيد بيانات المستخدم
+        
+        // املأ بيانات gameState
+        gameState.currentUser = data;
         gameState.totalAcademicPoints = data.academic_points;
         gameState.userLevel = data.level;
         gameState.unlockedModules = data.unlocked_modules || [];
-        gameState.isDeveloper = (data.role === 'developer');
-
-        console.log("User successfully logged in from saved session.");
+        
         updateHeaderForUser();
-        showScreen('institute'); // اذهب مباشرة إلى الشاشة الرئيسية
+
+        // اقرأ آخر شاشة محفوظة وانتقل إليها
+        const lastScreen = localStorage.getItem('lastScreen') || 'institute';
+        showScreen(lastScreen);
 
     } catch (error) {
-        console.error(error.message);
-        // في حال وجود أي خطأ، نظّف الحالة
         localStorage.removeItem('token');
-        gameState.currentUser = null;
-        updateHeaderForUser();
         showScreen('welcome');
     }
 }
@@ -899,19 +884,29 @@ function saveGameState() {
 }
 
 function showScreen(screenKey) {
+    // إخفاء جميع الشاشات أولاً
     Object.values(screens).forEach(s => s.classList.add('hidden'));
+
+    // إظهار الشاشة المطلوبة فقط إذا كانت موجودة
     if (screens[screenKey]) {
         screens[screenKey].classList.remove('hidden');
     }
 
-    // Hide quiz HUD unless on quiz screen
-    if (screenKey !== 'quiz') {
-        quizHud.classList.remove('active');
-        appHeader.style.display = 'flex'; // Ensure header is visible on other screens
-    } else {
-        appHeader.style.display = 'none'; // Hide header during quiz
+    // --- START: NEW CODE (لحفظ آخر شاشة) ---
+    // نحن لا نريد حفظ الشاشات التي لا يجب أن تكون نقطة بداية،
+    // مثل شاشة الاختبار، أو شاشة الترحيب (لأن المستخدم سيكون قد سجل دخوله).
+    const screensToExclude = ['quiz', 'welcome'];
+    if (!screensToExclude.includes(screenKey)) {
+        localStorage.setItem('lastScreen', screenKey);
     }
+    // --- END: NEW CODE ---
 
+    // إظهار وإخفاء الشريط العلوي (Header) وشريط الاختبار (HUD) بناءً على الشاشة
+    const isFullScreen = (screenKey === 'welcome' || screenKey === 'quiz');
+    appHeader.style.display = isFullScreen ? 'none' : 'flex';
+    quizHud.classList.toggle('active', screenKey === 'quiz');
+
+    // تشغيل دوال العرض الخاصة بكل شاشة
     const renderFunction = {
         'welcome': renderWelcomeScreen,
         'institute': renderInstituteScreen,
@@ -919,14 +914,18 @@ function showScreen(screenKey) {
         'semester': renderSemesterScreen,
         'course': renderCourseScreen,
         'academicPath': renderAcademicPathScreen,
-        'quiz': () => displayQuestion(), // Call displayQuestion directly for quiz screen
-        'userProfile': () => {}, // Handled by showUserProfile()
-        'developerDashboard': () => {}, // Handled by showDeveloperDashboard()
-        'leaderboard': () => {} // Handled by renderLeaderboardScreen()
+        'quiz': displayQuestion,
+        'userProfile': showUserProfile, // تأكد من أن showUserProfile لا تستدعي showScreen مرة أخرى لتجنب حلقة لا نهائية
+        'adminDashboard': showAdminDashboard, // نفس الملاحظة هنا
+        'leaderboard': renderLeaderboardScreen // ونفس الملاحظة هنا
     }[screenKey];
 
-    if (renderFunction) renderFunction();
-    saveGameState(); // Save state after screen change
+    // استدعاء دالة العرض فقط إذا كانت موجودة،
+    // واستدعاء showUserProfile وغيرها يتم من خلال onclick، لذلك لا نحتاج لاستدعائها هنا مرة أخرى.
+    // هذا يمنع إعادة العرض غير الضرورية.
+    if (renderFunction && !['userProfile', 'adminDashboard', 'leaderboard'].includes(screenKey)) {
+        renderFunction();
+    }
 }
 
 function renderWelcomeScreen() {
