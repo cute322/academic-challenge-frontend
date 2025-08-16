@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحدي الأكاديمي</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header id="app-header">
+        <div class="header-item" id="user-profile" onclick="showUserProfile()">
+            <!-- الأيقونة ستُضاف بواسطة JavaScript -->
+            <span>الملف الشخصي</span>
+        </div>
+        <div class="header-item" id="user-level">
+            <span>المستوى 1</span>
+            <!-- الأيقونة ستُضاف بواسطة JavaScript -->
+        </div>
+        <div class="header-item" id="academic-points">
+            <span>0</span>
+            <!-- الأيقونة ستُضاف بواسطة JavaScript -->
+        </div>
+    </header>
+
+    <main id="main-container">
+        <div id="welcome-screen" class="screen"></div>
+        <div id="institute-screen" class="screen hidden"></div>
+        <div id="year-screen" class="screen hidden"></div>
+        <div id="semester-screen" class="screen hidden"></div>
+        <div id="course-screen" class="screen hidden"></div>
+        <div id="academic-path-screen" class="screen hidden"></div>
+        <div id="user-profile-screen" class="screen hidden"></div>
+        <div id="developer-dashboard-screen" class="screen hidden"></div>
+        <div id="leaderboard-screen" class="screen hidden"></div> <!-- New Leaderboard Screen -->
+
+        <div id="quiz-screen" class="screen hidden">
+            <h2 id="question-text"></h2>
+            <div id="options-grid" class="options-grid"></div>
+            <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="confirmExitQuiz()">العودة للمسار الأكاديمي</button> <!-- New Exit Button -->
+        </div>
+    </main>
+
+    <div id="quiz-hud">
+        <div id="attempts-container"></div>
+        <div id="progress-bar-container"><div id="progress-bar-inner"></div></div>
+    </div>
+
+    <div id="feedback-container">
+        <div id="feedback-content">
+            <h3 id="feedback-title"></h3>
+            <p id="feedback-text"></p>
+            <button id="explanation-btn" class="btn-explanation hidden">💡 عرض التوضيح</button>
+        </div>
+    </div>
+
+    <div id="certificate-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">شهادة إنجاز</div>
+            <div class="modal-body">
+                <h2>أداء متميز!</h2>
+                <p>لقد أكملت مقرر <strong id="completed-module-name"></strong> بنجاح.</p>
+                <div class="award-section">
+                    <p id="final-score-text"></p>
+                    <p id="points-won-text"></p>
+                </div>
+            </div>
+            <button class="btn btn-modal-close" onclick="closeCertificate()">تابع المسيرة الأكاديمية</button>
+        </div>
+    </div>
+
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-modal-close-icon" onclick="closeAuthModal()">×</button>
+            <div class="modal-header" id="auth-modal-title">تسجيل الدخول</div>
+            <div class="modal-body">
+                <form id="auth-form" novalidate>
+                    <div class="form-group hidden" id="username-group">
+                        <label for="auth-username">اسم المستخدم</label>
+                        <input type="text" id="auth-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-email">البريد الإلكتروني</label>
+                        <input type="email" id="auth-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">كلمة المرور</label>
+                        <input type="password" id="auth-password" required>
+                    </div>
+                    <button type="submit" class="btn" id="auth-submit-btn">تسجيل الدخول</button>
+                </form>
+                <p class="switch-auth-mode" id="switch-to-register-container">
+                    ليس لديك حساب؟ <a href="#" id="switch-to-register">سجل الآن</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="comments-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="btn-modal-close-icon" onclick="closeCommentsModal()">×</button>
+            <div class="modal-header">التعليقات والملاحظات</div>
+            <div class="modal-body">
+                <div id="comments-list"></div>
+                <textarea id="new-comment-text" placeholder="اكتب تعليقك هنا..." rows="3"></textarea>
+                <button class="btn" id="submit-comment-btn">إرسال التعليق</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="correct-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" preload="auto"></audio>
+    <audio id="wrong-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-show-wrong-answer-950.mp3" preload="auto"></audio>
+    <audio id="level-up-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3" preload="auto"></audio>
+
+    <div id="toast-notification"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
