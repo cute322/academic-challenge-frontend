@@ -2048,25 +2048,14 @@ async function updateUserProgressOnServer() {
     // تأكد من وجود مستخدم مسجل دخول
     if (!gameState.currentUser) return;
 
-    // In a real app, you'd send a token here
-    // const token = localStorage.getItem('token');
-    // if (!token) { console.error("Token not found. Cannot update progress."); return; }
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.error("Token not found. Cannot update progress.");
+        return;
+    }
 
     try {
-        // Mocking backend call for progress update
-        const userIndex = gameState.mockUsers.findIndex(u => u.id === gameState.currentUser.id);
-        if (userIndex !== -1) {
-            gameState.mockUsers[userIndex].academicPoints = gameState.totalAcademicPoints;
-            gameState.mockUsers[userIndex].level = gameState.userLevel;
-            gameState.mockUsers[userIndex].unlockedModules = [...gameState.unlockedModules];
-            console.log("Mock user progress updated:", gameState.mockUsers[userIndex]);
-            showToast("تم حفظ تقدمك بنجاح!", 2000, 'success');
-        } else {
-            throw new Error("User not found in mock database.");
-        }
-        
-        // In a real app:
-        /*
+        // --- START: REAL BACKEND CODE ---
         const response = await fetch('https://academic-challenge-api.onrender.com/api/users/progress', {
             method: 'PUT',
             headers: {
@@ -2079,19 +2068,21 @@ async function updateUserProgressOnServer() {
                 unlocked_modules: gameState.unlockedModules
             })
         });
+
         const data = await response.json();
+
         if (!response.ok) {
             throw new Error(data.message || "Failed to update progress on server.");
         }
+        
         console.log("User progress successfully saved to the server.");
         showToast("تم حفظ تقدمك بنجاح!", 2000, 'success');
-        */
+        // --- END: REAL BACKEND CODE ---
 
     } catch (error) {
         console.error("Error saving user progress:", error);
-        showToast("خطأ: لم يتم حفظ تقدمك على الخادم.", 4000, 'error');
+        showToast(`خطأ: ${error.message}`, 4000, 'error');
     }
-    saveGameState(); // Save state after progress update
 }
 
 async function submitComment() {
