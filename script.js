@@ -3286,8 +3286,8 @@ function renderSemesterScreen() {
     screens.semester.innerHTML = `
         <h2>اختر السداسي</h2>
         <div class="card-list">
-            <div class="card" onclick="selectSemester(1)"><span>السداسي الأول</span></div>
-            <div class="card" onclick="selectSemester(2)"><span>السداسي الثاني</span></div>
+           <div class="card" onclick="selectSemesterAndShowOptions(1)"><span>السداسي الأول</span></div>
+           <div class="card" onclick="selectSemesterAndShowOptions(2)"><span>السداسي الثاني</span></div>
         </div>`;
 }
 
