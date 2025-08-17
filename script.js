@@ -2448,17 +2448,17 @@ async function showCompletionScreen(hasLost) {
     const finalScore = (gameState.score / module.questions.length) * 20;
     const pointsWon = hasLost ? 0 : Math.round(finalScore * 1.5);
 
+    // 1. تحديث النقاط في الذاكرة
     gameState.totalAcademicPoints += pointsWon;
-    academicPointsDisplay.textContent = gameState.totalAcademicPoints;
 
-    // Level up logic
+    // 2. التحقق من ترقية المستوى
     if (gameState.totalAcademicPoints >= gameState.userLevel * 50) {
         gameState.userLevel++;
-        document.querySelector('#user-level span').textContent = `المستوى ${gameState.userLevel}`;
         playSound('levelUp');
         showToast(`تهانينا! لقد وصلت إلى المستوى ${gameState.userLevel}!`, 5000, 'success');
     }
 
+    // 3. فتح الوحدة التالية
     if (!hasLost) {
         const moduleKeys = Object.keys(course.modules);
         const currentModuleIndex = moduleKeys.indexOf(gameState.currentModule);
@@ -2470,15 +2470,23 @@ async function showCompletionScreen(hasLost) {
             }
         }
     }
+    
+    // --- START: NEW AND CORRECTED CODE ---
+    
+    // 4. استدعاء الدالة الرئيسية لتحديث الشريط العلوي بالكامل بالقيم الجديدة
+    updateHeaderForUser();
 
-    await updateUserProgressOnServer(); // Save progress to mock backend
+    // 5. الآن، قم بحفظ التقدم المحدث على الخادم
+    await updateUserProgressOnServer();
+    
+    // --- END: NEW AND CORRECTED CODE ---
 
+    // 6. عرض شاشة شهادة الإنجاز
     document.getElementById('completed-module-name').textContent = module.name;
     document.getElementById('final-score-text').textContent = `علامتك النهائية: ${finalScore.toFixed(1)} / 20`;
-    document.getElementById('points-won-text').textContent = `+${pointsWon} نقطة أكاديمية 📚`;
+    document.getElementById('points-won-text').textContent = `+${pointsWon} نقطة أكاديمية ${ICONS.points}`;
 
     certificateModal.classList.add('show');
-    saveGameState();
 }
 
 function closeCertificate() {
