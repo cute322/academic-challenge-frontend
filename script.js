@@ -243,8 +243,8 @@ const quizData = {
 
     'module1_infosoc': {
     name: "المحاضرة الأولى: مقدمة وماهية مجتمع المعلومات",
-    semester: 1,
     icon: '<i class="fas fa-lightbulb"></i>',
+    semester: 1,
     questions: [
         {
             type: 'mcq',
@@ -279,7 +279,7 @@ const quizData = {
             answer: "1967",
             explanation: "أظهرت دراسة مارك بورات التحول الكبير نحو اقتصاد المعلومات، حيث شكلت الأنشطة المعلوماتية نسبة ضخمة (46%) من العمالة في أمريكا بحلول عام 1967."
         }
-    ]
+      ]
     },
     'module2_infosoc': {
     name: "المحاضرة الثانية: تاريخ المفهوم وأنماط المجتمعات",
@@ -321,7 +321,7 @@ const quizData = {
     ]
 },
 'module3_infosoc': {
-    name: "المحاضرة الثالثة: منظرو التحول (ماكلوهان، توفلر، بيل)",
+    name: " منظرو التحول (ماكلوهان، توفلر، بيل)",
     icon: '<i class="fas fa-users"></i>',
     questions: [
         {
