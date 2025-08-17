@@ -1492,12 +1492,11 @@ const quizData = {
      'research_schools_methods': {
     name: "مدارس ومناهج البحث العلمي",
     icon: '<i class="fas-fa-book-open"></i>',
-    semester: 1, // هذا المقياس يخص السداسي الأول
+    semester: 1,
     modules: {
 
-        // ===== المحاضرة 1: مفهوم المدرسة الفكرية =====
         'module1_res_schools': {
-            name: "المحاضرة 1: مفهوم المدرسة الفكرية",
+            name: "مفهوم المدرسة الفكرية",
             icon: '<i class="fas fa-school"></i>',
             questions: [
                 {
@@ -1543,9 +1542,8 @@ const quizData = {
             ]
         },
 
-        // ===== المحاضرة 2: المدرسة الإسلامية في العلوم الإنسانية =====
         'module2_res_schools': {
-            name: "المحاضرة 2: المدرسة الإسلامية",
+            name: "المدرسة الإسلامية",
             icon: '<i class="fas fa-moon"></i>',
             questions: [
                 {
@@ -1591,9 +1589,8 @@ const quizData = {
             ]
         },
 
-        // ===== المحاضرة 3: المدرسة الماركسية =====
         'module3_res_schools': {
-            name: "المحاضرة 3: المدرسة الماركسية",
+            name: "المدرسة الماركسية",
             icon: '<i class="fab fa-dyalog"></i>',
             questions: [
                 {
@@ -1645,9 +1642,8 @@ const quizData = {
             ]
         },
 
-        // ===== المحاضرة 4: البحث العلمي والمناهج =====
         'module4_res_schools': {
-            name: "المحاضرة 4: البحث العلمي والمناهج",
+            name: "البحث العلمي والمناهج",
             icon: '<i class="fas fa-microscope"></i>',
             questions: [
                 {
