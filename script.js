@@ -5,6 +5,7 @@ const quizData = {
     'islamic_civilization': {
         name: "مدخل إلى تاريخ الحضارة الإسلامية",
         icon: '<i class="fas fa-mosque"></i>', // Font Awesome icon
+        semester: 2,
         modules: {
             'module1_civ': {
                 name: "الموقع والمضايق",
@@ -60,6 +61,7 @@ const quizData = {
     'documentary_research': {
         name: "البحث الوثائقي",
         icon: '<i class="fas fa-search"></i>',
+        semester: 2,
         modules: {
             'module1_res': {
                 name: "المصادر وأنواعها",
@@ -106,6 +108,7 @@ const quizData = {
     'libraries_management': {
         name: "أساسيات علوم المكتبات والتوثيق",
         icon: '<i class="fas fa-book-open"></i>',
+        semester: 2,
         modules: {
             'module1_lib': {
                 name: "تنظيم وتسيير المؤسسات",
@@ -150,6 +153,7 @@ const quizData = {
     'scientific_research_methodology': {
         name: "منهجية البحث العلمي",
         icon: '<i class="fas fa-flask"></i>',
+        semester: 2,
         modules: {
             'module1_method': {
                 name: "مناهج البحث (وصفي وتاريخي)",
@@ -192,6 +196,7 @@ const quizData = {
     'media_communication_intro': {
         name: "مدخل إلى وسائل الإعلام والاتصال",
         icon: '<i class="fas fa-broadcast-tower"></i>',
+        semester: 2,
         modules: {
             'module1_media': {
                 name: "تطور وسائل الاتصال",
@@ -292,6 +297,7 @@ const toastNotification = document.getElementById('toast-notification');
 let gameState = {
     currentCourse: null,
     currentModule: null,
+    currentSemester: null,
     currentQuestionIndex: 0,
     score: 0,
     attempts: 0,
@@ -979,29 +985,40 @@ function renderSemesterScreen() {
     screens.semester.innerHTML = `
         <h2>اختر السداسي</h2>
         <div class="card-list">
-            <div class="card locked"><span>السداسي الأول</span>${ICONS.lock}</div>
-            <div class="card" onclick="showScreen('course')"><span>السداسي الثاني</span></div>
+            <div class="card" onclick="selectSemester(1)"><span>السداسي الأول</span></div>
+            <div class="card" onclick="selectSemester(2)"><span>السداسي الثاني</span></div>
         </div>`;
+}
+
+function selectSemester(semesterNumber) {
+    gameState.currentSemester = semesterNumber;
+    showScreen('course');
 }
 
 function renderCourseScreen() {
     if (!gameState.currentUser) { showAuthModal('login'); return; }
-    let courseCardsHTML = Object.keys(quizData).map(courseKey => {
-        const course = quizData[courseKey];
-        // A course is considered locked if it has no modules or if its first module is not unlocked
-        // For simplicity, we'll just check if it has modules. Real locking would be more complex.
-        const isLocked = !course.modules || Object.keys(course.modules).length === 0; // Simplified locking
-        return `
-            <div class="card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? '' : `selectCourse('${courseKey}')`}">
-                <span>${course.name}</span>
-                ${isLocked ? ICONS.lock : course.icon} <!-- Display course icon if unlocked, lock if locked -->
-            </div>
-        `;
-    }).join('');
+
+    let courseCardsHTML = Object.keys(quizData)
+        .filter(courseKey => quizData[courseKey].semester === gameState.currentSemester)
+        .map(courseKey => {
+            const course = quizData[courseKey];
+            const isLocked = !course.modules || Object.keys(course.modules).length === 0;
+            return `
+                <div class="card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? '' : `selectCourse('${courseKey}')`}">
+                    <span>${course.name}</span>
+                    ${isLocked ? ICONS.lock : course.icon}
+                </div>
+            `;
+        }).join('');
+
+    if (courseCardsHTML === '') {
+        courseCardsHTML = `<p class="screen-description">لا توجد مقاييس متاحة لهذا السداسي حالياً.</p>`;
+    }
 
     screens.course.innerHTML = `
-        <h2>اختر المقياس الدراسي</h2>
+        <h2>مقاييس السداسي ${gameState.currentSemester === 1 ? 'الأول' : 'الثاني'}</h2>
         <div class="card-list">${courseCardsHTML}</div>
+        <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
     `;
 }
 
