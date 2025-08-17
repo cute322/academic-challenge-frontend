@@ -3481,7 +3481,7 @@ async function showCompletionScreen(hasLost) {
     // 6. عرض شاشة شهادة الإنجاز
     document.getElementById('completed-module-name').textContent = module.name;
     document.getElementById('final-score-text').textContent = `علامتك النهائية: ${finalScore.toFixed(1)} / 20`;
-    document.getElementById('points-won-text').textContent = `+${pointsWon} نقطة أكاديمية ${ICONS.points}`;
+    document.getElementById('points-won-text').innerHTML = `+${pointsWon} نقطة أكاديمية ${ICONS.points}`;
 
     certificateModal.classList.add('show');
 }
