@@ -2512,7 +2512,11 @@ const screens = {
     userProfile: document.getElementById('user-profile-screen'),
     developerDashboard: document.getElementById('developer-dashboard-screen'),
     leaderboard: document.getElementById('leaderboard-screen'), // New screen reference
-    adminDashboard: document.getElementById('admin-dashboard-screen')
+    adminDashboard: document.getElementById('admin-dashboard-screen'),
+    choice: document.getElementById('choice-screen'),
+    lectures: document.getElementById('lectures-screen'),
+    lectureContent: document.getElementById('lecture-content-screen')
+
 };
 const quizHud = document.getElementById('quiz-hud');
 const attemptsContainer = document.getElementById('attempts-container');
@@ -2630,6 +2634,66 @@ function showAuthModal(mode = 'login') {
     };
 }
 
+function renderCourseOrLectureChoiceScreen() {
+    const choiceScreen = document.getElementById('choice-screen');
+    choiceScreen.innerHTML = `
+        <h2>اختر مسارك للسداسي ${gameState.currentSemester === 1 ? 'الأول' : 'الثاني'}</h2>
+        <div class="card-list" style="grid-template-columns: 1fr 1fr;">
+            <div class="card" onclick="showScreen('course')">
+                <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <span>الاختبارات التفاعلية</span>
+            </div>
+            <div class="card" onclick="showLecturesScreen()">
+                <i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <span>ملخصات المحاضرات</span>
+            </div>
+        </div>
+        <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
+    `;
+    showScreen('choice');
+}
+// دالة لعرض قائمة المقاييس المتاحة للقراءة
+function showLecturesScreen() {
+    const lecturesScreen = document.getElementById('lectures-screen');
+    let coursesHTML = Object.keys(quizData)
+        .filter(courseKey => quizData[courseKey].semester === gameState.currentSemester && quizData[courseKey].summary)
+        .map(courseKey => {
+            const course = quizData[courseKey];
+            return `
+                <div class="card" onclick="showLectureContent('${courseKey}')">
+                    <span>${course.name}</span>
+                    ${course.icon}
+                </div>
+            `;
+        }).join('');
+
+    if (coursesHTML === '') {
+        coursesHTML = `<p class="screen-description">لا توجد ملخصات متاحة لهذا السداسي حالياً.</p>`;
+    }
+
+    lecturesScreen.innerHTML = `
+        <h2>ملخصات مقاييس السداسي ${gameState.currentSemester === 1 ? 'الأول' : 'الثاني'}</h2>
+        <div class="card-list">${coursesHTML}</div>
+        <button class="btn" onclick="renderCourseOrLectureChoiceScreen()">العودة</button>
+    `;
+    showScreen('lectures');
+}
+
+// دالة لعرض محتوى الملخص الفعلي للمقياس المختار
+function showLectureContent(courseKey) {
+    const lectureContentScreen = document.getElementById('lecture-content-screen');
+    const course = quizData[courseKey];
+    lectureContentScreen.innerHTML = `
+        <div class="lecture-content-container">
+            <h2>${course.name}</h2>
+            <div class="lecture-summary">
+                ${course.summary}
+            </div>
+            <button class="btn" onclick="showLecturesScreen()">العودة لقائمة المقاييس</button>
+        </div>
+    `;
+    showScreen('lectureContent');
+}
 function closeAuthModal() {
     authModal.classList.remove('show');
     authEmailInput.value = '';
@@ -3225,6 +3289,11 @@ function renderSemesterScreen() {
             <div class="card" onclick="selectSemester(1)"><span>السداسي الأول</span></div>
             <div class="card" onclick="selectSemester(2)"><span>السداسي الثاني</span></div>
         </div>`;
+}
+
+function selectSemesterAndShowOptions(semesterNumber) {
+    gameState.currentSemester = semesterNumber;
+    renderCourseOrLectureChoiceScreen();
 }
 
 function selectSemester(semesterNumber) {
