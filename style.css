@@ -811,3 +811,54 @@ tbody tr:hover {
 .feature-item i {
     color: var(--color-accent-blue);
 }
+/* =================================== */
+/* ==== Styles for Summary Pages ==== */
+/* =================================== */
+
+.lecture-content-container {
+    /* استخدام الصورة كخلفية */
+    background-image: url('paper-bg.jpg');
+    background-size: cover; /* لتغطية كامل المساحة */
+    background-position: center;
+    
+    /* تعديل الألوان لتتناسب مع الخلفية الجديدة */
+    color: #3a2e20; /* لون بني داكن للنص */
+    border: 1px solid #c8b8a3; /* إطار بلون الورق القديم */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* ظل لإعطاء عمق */
+    
+    padding: 40px;
+    border-radius: 5px; /* حواف حادة قليلاً لتبدو كورقة */
+    text-align: right;
+    width: 100%;
+    max-width: 800px; /* تحديد عرض مناسب للقراءة */
+    margin: 20px auto; /* توسيط الشاشة */
+}
+
+.lecture-summary {
+    line-height: 2.2; /* مسافة أكبر بين السطور لراحة العين */
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+.lecture-summary h1, .lecture-summary h2, .lecture-summary h3 {
+    color: #5a4732; /* لون أغمق للعناوين */
+    font-family: 'Cairo', sans-serif; /* استخدام خط مميز للعناوين */
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(90, 71, 50, 0.2);
+    padding-bottom: 5px;
+}
+
+.lecture-summary p {
+    margin-bottom: 1.5em;
+}
+
+.lecture-summary strong {
+    color: #8a0303; /* لون أحمر داكن للكلمات الهامة */
+    font-weight: 700;
+}
+
+.lecture-summary ul {
+    list-style-position: inside; /* لجعل نقاط القائمة داخل النص */
+    padding-right: 20px; /* مسافة بادئة للقائمة */
+}
