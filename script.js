@@ -2488,6 +2488,31 @@ const quizData = {
 }
 };
 
+const fullSummaryText = `
+    <h1>ملخصات شاملة للمقاييس</h1>
+    <hr>
+
+    <h2>مقياس: مدخل إلى علم المكتبات</h2>
+    <h3>المحاضرة 1: بدايات المؤسسات الوثائقية</h3>
+    <p>تعد المؤسسات الوثائقية مثل المكتبات والأرشيفات ومراكز المعلومات أساس حفظ التراث الإنساني. بدأت هذه المؤسسات في العصور القديمة كـ'بيت الرقم' في <strong>بلاد ما بين النهرين</strong> حيث كانت الكتابة المسمارية على الألواح الطينية هي السائدة...</p>
+    
+    <h3>المحاضرة 2: أنواع المكتبات</h3>
+    <p>تنقسم المكتبات إلى أنواع عديدة أهمها <strong>المكتبة الوطنية</strong> التي تعتبر المكتبة الأم في الدولة وتحصل على الإنتاج الفكري عبر الإيداع القانوني...</p>
+    
+    <!-- أكمل لصق كل ملخصات هذا المقياس هنا -->
+
+    <hr>
+    <h2>مقياس: تاريخ الجزائر العام</h2>
+    <h3>المحاضرة 1: التواجد القرطاجي</h3>
+    <p>بدأ تاريخ الجزائر المسجل مع التواجد الفينيقي ثم القرطاجي على سواحلها، حيث تأسست مدن تجارية أثرت في السكان المحليين...</p>
+
+    <!-- أكمل لصق كل ملخصات هذا المقياس هنا -->
+    
+    <hr>
+    
+    <!-- يمكنك إضافة أي مقياس آخر بنفس الطريقة -->
+`;
+
 // Updated ICONS object to use Font Awesome classes
 const ICONS = {
     lock: '<i class="fas fa-lock"></i>',
@@ -2515,7 +2540,9 @@ const screens = {
     adminDashboard: document.getElementById('admin-dashboard-screen'),
     choice: document.getElementById('choice-screen'),
     lectures: document.getElementById('lectures-screen'),
-    lectureContent: document.getElementById('lecture-content-screen')
+    lectureContent: document.getElementById('lecture-content-screen'),
+    summaryPage: document.getElementById('summary-page-screen')
+
 
 };
 const quizHud = document.getElementById('quiz-hud');
@@ -2632,6 +2659,21 @@ function showAuthModal(mode = 'login') {
         e.preventDefault();
         handleAuthSubmit(mode);
     };
+}
+
+function showFullSummary() {
+    const summaryScreen = document.getElementById('summary-page-screen');
+    
+    summaryScreen.innerHTML = `
+        <div class="lecture-content-container">
+            <div class="lecture-summary">
+                ${fullSummaryText}
+            </div>
+            <button class="btn" onclick="showScreen('institute')">العودة إلى القائمة الرئيسية</button>
+        </div>
+    `;
+
+    showScreen('summaryPage');
 }
 
 function renderCourseOrLectureChoiceScreen() {
@@ -3254,19 +3296,19 @@ function renderWelcomeScreen() {
 }
 
 function renderInstituteScreen() {
-    if (!gameState.currentUser) {
-        showAuthModal('login'); // Force login if not authenticated
-        return;
-    }
+    if (!gameState.currentUser) { showAuthModal('login'); return; }
     appHeader.style.display = 'flex';
     screens.institute.innerHTML = `
-        <h2>اختر تخصص</h2>
-        <div class="card-list">
-            <div class="card" onclick="showScreen('year')"><span>تخصص العلوم الإنسانية</span></div>
-            <div class="card locked"><span>تخصص العلوم الاجتماعية</span>${ICONS.lock}</div>
-            <div class="card locked"><span>تخصص الحقوق والعلوم السياسية</span>${ICONS.lock}</div>
-            <div class="card locked"><span>تخصص العلوم والتكنولوجيا</span>${ICONS.lock}</div>
-            <div class="card locked"><span>تخصص العلوم الاقتصادية</span>${ICONS.lock}</div>
+        <h2>اختر مسارك</h2>
+        <div class="card-list" style="grid-template-columns: 1fr 1fr;">
+            <div class="card" onclick="showScreen('year')">
+                <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <span>الاختبارات التفاعلية</span>
+            </div>
+            <div class="card" onclick="showFullSummary()">
+                <i class="fas fa-book-reader" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <span>المكتبة الشاملة (للملخصات)</span>
+            </div>
         </div>`;
 }
 
