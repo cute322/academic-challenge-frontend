@@ -3281,16 +3281,13 @@ function renderInstituteScreen() {
     if (!gameState.currentUser) { showAuthModal('login'); return; }
     appHeader.style.display = 'flex';
     screens.institute.innerHTML = `
-        <h2>اختر مسارك</h2>
-        <div class="card-list" style="grid-template-columns: 1fr 1fr;">
-            <div class="card" onclick="showScreen('year')">
-                <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <span>الاختبارات التفاعلية</span>
-            </div>
-            <div class="card" onclick="showFullSummary()">
-                <i class="fas fa-book-reader" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <span>المكتبة الشاملة (للملخصات)</span>
-            </div>
+        <h2>اختر تخصص</h2>
+        <div class="card-list">
+            <div class="card" onclick="showScreen('year')"><span>تخصص العلوم الإنسانية</span></div>
+            <div class="card locked"><span>تخصص العلوم الاجتماعية</span>${ICONS.lock}</div>
+            <div class="card locked"><span>تخصص الحقوق والعلوم السياسية</span>${ICONS.lock}</div>
+            <div class="card locked"><span>تخصص العلوم والتكنولوجيا</span>${ICONS.lock}</div>
+            <div class="card locked"><span>تخصص العلوم الاقتصادية</span>${ICONS.lock}</div>
         </div>`;
 }
 
@@ -3310,21 +3307,36 @@ function renderSemesterScreen() {
     screens.semester.innerHTML = `
         <h2>اختر السداسي</h2>
         <div class="card-list">
-            <div class="card" onclick="selectSemester(1)"><span>السداسي الأول</span></div>
-            <div class="card" onclick="selectSemester(2)"><span>السداسي الثاني</span></div>
-
+            <div class="card" onclick="selectSemesterAndShowOptions(1)"><span>السداسي الأول</span></div>
+            <div class="card" onclick="selectSemesterAndShowOptions(2)"><span>السداسي الثاني</span></div>
         </div>`;
 }
-
+function selectSemesterAndShowOptions(semesterNumber) {
+    gameState.currentSemester = semesterNumber;
+    renderCourseOrLectureChoiceScreen(); // <-- تنقلك إلى شاشة الخيارات
+}
 // تأكد من وجود هذه الدالة الصغيرة تحتها
 function selectSemester(semesterNumber) {
     gameState.currentSemester = semesterNumber;
     showScreen('course'); // <-- هنا ننتقل مباشرة إلى شاشة المقاييس
 }
-
-function selectSemester(semesterNumber) {
-    gameState.currentSemester = semesterNumber;
-    showScreen('course');
+function renderCourseOrLectureChoiceScreen() {
+    const choiceScreen = document.getElementById('choice-screen');
+    choiceScreen.innerHTML = `
+        <h2>اختر مسارك للسداسي ${gameState.currentSemester === 1 ? 'الأول' : 'الثاني'}</h2>
+        <div class="card-list" style="grid-template-columns: 1fr 1fr;">
+            <div class="card" onclick="showScreen('course')">
+                <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <span>الاختبارات التفاعلية</span>
+            </div>
+            <div class="card" onclick="showLecturesScreen()">
+                <i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <span>ملخصات المحاضرات</span>
+            </div>
+        </div>
+        <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
+    `;
+    showScreen('choice');
 }
 
 function renderCourseScreen() {
