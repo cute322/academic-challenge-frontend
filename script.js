@@ -3328,14 +3328,15 @@ function renderSemesterScreen() {
     screens.semester.innerHTML = `
         <h2>اختر السداسي</h2>
         <div class="card-list">
-            <div class="card" onclick="selectSemesterAndShowOptions(1)"><span>السداسي الأول</span></div>
-            <div class="card" onclick="selectSemesterAndShowOptions(2)"><span>السداسي الثاني</span></div>
+            <div class="card" onclick="selectSemester(1)"><span>السداسي الأول</span></div>
+            <div class="card" onclick="selectSemester(2)"><span>السداسي الثاني</span></div>
         </div>`;
 }
 
-function selectSemesterAndShowOptions(semesterNumber) {
+// تأكد من وجود هذه الدالة الصغيرة
+function selectSemester(semesterNumber) {
     gameState.currentSemester = semesterNumber;
-    renderCourseOrLectureChoiceScreen(); // <-- هذه الدالة تنقلك إلى شاشة الخيارات
+    showScreen('course'); // <-- هنا ننتقل مباشرة إلى شاشة المقاييس
 }
 
 function selectSemester(semesterNumber) {
@@ -3350,11 +3351,18 @@ function renderCourseScreen() {
         .filter(courseKey => quizData[courseKey].semester === gameState.currentSemester)
         .map(courseKey => {
             const course = quizData[courseKey];
-            const isLocked = !course.modules || Object.keys(course.modules).length === 0;
+            
+            const summaryButtonHTML = course.summary 
+                ? `<button class="btn-summary" onclick="showCourseSummary('${courseKey}')">عرض الملخص</button>`
+                : '';
+            
             return `
-                <div class="card ${isLocked ? 'locked' : ''}" onclick="${isLocked ? '' : `selectCourse('${courseKey}')`}">
-                    <span>${course.name}</span>
-                    ${isLocked ? ICONS.lock : course.icon}
+                <div class="card-container">
+                    <div class="card" onclick="selectCourse('${courseKey}')">
+                        <span>${course.name}</span>
+                        ${course.icon}
+                    </div>
+                    ${summaryButtonHTML}
                 </div>
             `;
         }).join('');
@@ -3368,6 +3376,17 @@ function renderCourseScreen() {
         <div class="card-list">${courseCardsHTML}</div>
         <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
     `;
+}
+
+function showCourseSummary(courseKey) {
+    const course = quizData[courseKey];
+    document.getElementById('summary-modal-title').innerText = `ملخص مقياس: ${course.name}`;
+    document.getElementById('summary-modal-body').innerHTML = course.summary;
+    document.getElementById('summary-modal').classList.add('show');
+}
+
+function closeSummaryModal() {
+    document.getElementById('summary-modal').classList.remove('show');
 }
 
 function selectCourse(courseKey) {
