@@ -2538,7 +2538,6 @@ const screens = {
     developerDashboard: document.getElementById('developer-dashboard-screen'),
     leaderboard: document.getElementById('leaderboard-screen'), // New screen reference
     adminDashboard: document.getElementById('admin-dashboard-screen'),
-    choice: document.getElementById('choice-screen'),
     lectures: document.getElementById('lectures-screen'),
     lectureContent: document.getElementById('lecture-content-screen'),
     summaryPage: document.getElementById('summary-page-screen')
@@ -2676,24 +2675,7 @@ function showFullSummary() {
     showScreen('summaryPage');
 }
 
-function renderCourseOrLectureChoiceScreen() {
-    const choiceScreen = document.getElementById('choice-screen');
-    choiceScreen.innerHTML = `
-        <h2>اختر مسارك للسداسي ${gameState.currentSemester === 1 ? 'الأول' : 'الثاني'}</h2>
-        <div class="card-list" style="grid-template-columns: 1fr 1fr;">
-            <div class="card" onclick="showScreen('course')">
-                <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <span>الاختبارات التفاعلية</span>
-            </div>
-            <div class="card" onclick="showLecturesScreen()">
-                <i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                <span>ملخصات المحاضرات</span>
-            </div>
-        </div>
-        <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
-    `;
-    showScreen('choice');
-}
+
 // دالة لعرض قائمة المقاييس المتاحة للقراءة
 function showLecturesScreen() {
     const lecturesScreen = document.getElementById('lectures-screen');
@@ -3330,10 +3312,11 @@ function renderSemesterScreen() {
         <div class="card-list">
             <div class="card" onclick="selectSemester(1)"><span>السداسي الأول</span></div>
             <div class="card" onclick="selectSemester(2)"><span>السداسي الثاني</span></div>
+
         </div>`;
 }
 
-// تأكد من وجود هذه الدالة الصغيرة
+// تأكد من وجود هذه الدالة الصغيرة تحتها
 function selectSemester(semesterNumber) {
     gameState.currentSemester = semesterNumber;
     showScreen('course'); // <-- هنا ننتقل مباشرة إلى شاشة المقاييس
@@ -3374,7 +3357,7 @@ function renderCourseScreen() {
     screens.course.innerHTML = `
         <h2>مقاييس السداسي ${gameState.currentSemester === 1 ? 'الأول' : 'الثاني'}</h2>
         <div class="card-list">${courseCardsHTML}</div>
-        <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 40px;" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
+        <button class="btn" onclick="showScreen('semester')">العودة لاختيار السداسي</button>
     `;
 }
 
