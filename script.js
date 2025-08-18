@@ -1699,7 +1699,7 @@ modules: {
     name: "منهجية وتقنيات البحث العلمي في العلوم الانسانية" ,
     icon: '<i class="fas fa-search"></i>',
     semester: 1, 
-    modules: {
+
   },  
     'media_communication_intro': {
         name: "مدخل إلى وسائل الإعلام والاتصال",
