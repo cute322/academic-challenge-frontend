@@ -2531,6 +2531,8 @@ const screens = {
     institute: document.getElementById('institute-screen'),
     year: document.getElementById('year-screen'),
     semester: document.getElementById('semester-screen'),
+    choice: document.getElementById('choice-screen'),
+
     course: document.getElementById('course-screen'),
     academicPath: document.getElementById('academic-path-screen'),
     quiz: document.getElementById('quiz-screen'),
