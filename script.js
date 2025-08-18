@@ -3627,17 +3627,13 @@ function renderCourseScreen() {
         .map(courseKey => {
             const course = quizData[courseKey];
             
-            const summaryButtonHTML = course.summary 
-                ? `<button class="btn-summary" onclick="showCourseSummary('${courseKey}')">عرض الملخص</button>`
-                : '';
-            
+
             return `
                 <div class="card-container">
                     <div class="card" onclick="selectCourse('${courseKey}')">
                         <span>${course.name}</span>
                         ${course.icon}
                     </div>
-                    ${summaryButtonHTML}
                 </div>
             `;
         }).join('');
