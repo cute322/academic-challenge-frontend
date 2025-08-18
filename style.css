@@ -833,6 +833,28 @@ tbody tr:hover {
     max-width: 800px; /* تحديد عرض مناسب للقراءة */
     margin: 20px auto; /* توسيط الشاشة */
 }
+/* =================================== */
+/* ==== Styles for Summary Pages ==== */
+/* =================================== */
+
+.lecture-content-container {
+    /* استخدام الصورة كخلفية */
+    background-image: url('paper-bg.jpg');
+    background-size: cover; /* لتغطية كامل المساحة */
+    background-position: center;
+    
+    /* تعديل الألوان لتتناسب مع الخلفية الجديدة */
+    color: #3a2e20; /* لون بني داكن للنص */
+    border: 1px solid #c8b8a3; /* إطار بلون الورق القديم */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* ظل لإعطاء عمق */
+    
+    padding: 40px;
+    border-radius: 5px; /* حواف حادة قليلاً لتبدو كورقة */
+    text-align: right;
+    width: 100%;
+    max-width: 800px; /* تحديد عرض مناسب للقراءة */
+    margin: 20px auto; /* توسيط الشاشة */
+}
 
 .lecture-summary {
     line-height: 2.2; /* مسافة أكبر بين السطور لراحة العين */
