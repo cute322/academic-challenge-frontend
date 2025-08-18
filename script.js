@@ -3059,11 +3059,11 @@ async function showAdminDashboard() {
         if (!usersResponse.ok) throw new Error(users.message || 'فشل تحميل المستخدمين.');
         if (!statsResponse.ok) throw new Error(stats.message || 'فشل تحميل الإحصائيات.');
 
-        // --- حساب الإحصائيات ---
+        // حساب الإحصائيات
         const today = new Date().toISOString().slice(0, 10);
         const newUsersToday = users.filter(user => (user.created_at || '').slice(0, 10) === today).length;
 
-        // --- بناء الجدول ---
+        // بناء الجدول
         const tableRowsHTML = users.map(user => `
             <tr>
                 <td>${user.username}</td>
@@ -3074,7 +3074,7 @@ async function showAdminDashboard() {
             </tr>
         `).join('');
 
-        // --- بناء الهيكل الكامل للصفحة ---
+        // بناء الهيكل الكامل للصفحة
         const dashboardHTML = `
             <h2>لوحة تحكم المشرف</h2>
             <div class="card-list" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 40px;">
@@ -3083,7 +3083,7 @@ async function showAdminDashboard() {
             </div>
 
             <h3>تطور تسجيل المستخدمين (شهرياً)</h3>
-            <div class="chart-container" style="background: var(--color-surface-dark); border-radius: 15px; padding: 20px; margin-bottom: 40px;">
+            <div class="chart-container" style="background: var(--color-surface-dark); border-radius: 15px; padding: 20px; margin-bottom: 40px; height: 50vh;">
                 <canvas id="usersChart"></canvas>
             </div>
 
@@ -3107,34 +3107,64 @@ async function showAdminDashboard() {
             <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 25px;" onclick="showUserProfile()">العودة للملف الشخصي</button>
         `;
         
-        // عرض الهيكل على الشاشة
         adminScreen.innerHTML = dashboardHTML;
 
-        // --- رسم المنحنى ---
-        const ctx = document.getElementById('usersChart').getContext('2d');
+        // --- START: كود الرسم البياني الجديد والمتقدم ---
+        
+        // 1. تجهيز البيانات
         const labels = stats.map(s => s.month);
-        const data = stats.map(s => s.count);
+        const actualData = stats.map(s => s.count);
+        const regressionData = stats.map((s, index) => [index, s.count]);
 
+        // 2. حساب خط الاتجاه العام (فقط إذا كان هناك أكثر من نقطة واحدة)
+        let trendlineData = [];
+        if (regressionData.length > 1) {
+            const result = regression.linear(regressionData);
+            const slope = result.equation[0];
+            const yIntercept = result.equation[1];
+            trendlineData = regressionData.map(point => slope * point[0] + yIntercept);
+        }
+
+        // 3. رسم المنحنيين معاً
+        const ctx = document.getElementById('usersChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'عدد المستخدمين الجدد',
-                    data: data,
-                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                    borderColor: 'rgba(76, 175, 80, 1)',
-                    borderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                }]
+                datasets: [
+                    {
+                        label: 'عدد المستخدمين الجدد (الفعلي)',
+                        data: actualData,
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'white'
+                    },
+                    {
+                        label: 'خط الاتجاه العام (y=ax+b)',
+                        data: trendlineData,
+                        type: 'line', // تأكد من أن هذا النوع خطي أيضاً
+                        borderColor: 'rgba(255, 215, 0, 0.8)',
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
             },
             options: {
                 responsive: true,
-                scales: { y: { beginAtZero: true, ticks: { color: 'white', stepSize: 1 } }, x: { ticks: { color: 'white' } } },
-                plugins: { legend: { labels: { color: 'white' } } }
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: 'white', stepSize: 1 }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                    x: { ticks: { color: 'white' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                },
+                plugins: { legend: { labels: { color: 'white', font: { size: 14 } } } }
             }
         });
+        // --- END: كود الرسم البياني الجديد والمتقدم ---
 
     } catch (error) {
         adminScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p style="color: var(--color-error);">${error.message}</p></div>`;
