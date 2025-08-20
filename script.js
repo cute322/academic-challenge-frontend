@@ -4243,6 +4243,7 @@ let gameState = {
     currentCourse: null,
     currentModule: null,
     currentSemester: null,
+    currentSpecialization: null,
     currentQuestionIndex: 0,
     score: 0,
     attempts: 0,
@@ -4989,6 +4990,11 @@ function renderInstituteScreen() {
         </div>`;
 }
 
+function selectSpecialization(specializationKey) {
+    gameState.currentSpecialization = specializationKey; // حفظ التخصص المختار
+    showScreen('year'); // الانتقال إلى شاشة اختيار السنة
+}
+
 function renderYearScreen() {
     if (!gameState.currentUser) { showAuthModal('login'); return; }
     screens.year.innerHTML = `
@@ -5041,8 +5047,7 @@ function renderCourseScreen() {
     if (!gameState.currentUser) { showAuthModal('login'); return; }
 
     let courseCardsHTML = Object.keys(quizData)
-        .filter(courseKey => quizData[courseKey].semester === gameState.currentSemester)
-        .map(courseKey => {
+    .filter(courseKey => quizData[courseKey].specialization === gameState.currentSpecialization && quizData[courseKey].semester === gameState.currentSemester)        .map(courseKey => {
             const course = quizData[courseKey];
             
 
