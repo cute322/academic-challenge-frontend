@@ -4349,7 +4349,7 @@ function showFullSummary() {
 function showLecturesScreen() {
     const lecturesScreen = document.getElementById('lectures-screen');
     let coursesHTML = Object.keys(quizData)
-        .filter(courseKey => quizData[courseKey].semester === gameState.currentSemester && quizData[courseKey].summary)
+        .filter(courseKey => quizData[courseKey].specialization === gameState.currentSpecialization && quizData[courseKey].semester === gameState.currentSemester && quizData[courseKey].summary)
         .map(courseKey => {
             const course = quizData[courseKey];
             return `
