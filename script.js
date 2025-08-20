@@ -4,6 +4,7 @@ const quizData = {
     'islamic_civilization': {
         name: "مدخل إلى تاريخ الحضارة الإسلامية",
         icon: '<i class="fas fa-mosque"></i>', 
+        specialization: 'humanities', 
         semester: 2,
         summary: `
     <h1>ملخص محاضرات الحضارة الإسلامية</h1>
@@ -142,6 +143,7 @@ const quizData = {
     'archaeology_intro': {
     name: "مدخل إلى علم الآثار",
     icon: '<i class="fas fa-search-location"></i>',
+    specialization: 'humanities', 
     semester: 2,
     summary: `
     <h1>ملخص المسح والحفرية الأثرية</h1>
@@ -401,6 +403,7 @@ const quizData = {
     'documentary_research': {
         name: "البحث الوثائقي",
         icon: '<i class="fas fa-search"></i>',
+        specialization: 'humanities', 
         semester: 2,
         summary: `
     <h2>ملخص شامل ومفصل لمقياس البحث الوثائقي</h2>
@@ -538,6 +541,7 @@ const quizData = {
     'libraries_management': {
         name: "أساسيات علوم المكتبات والتوثيق",
         icon: '<i class="fas fa-book-open"></i>',
+        specialization: 'humanities', 
         semester: 2,
         summary: `
     <h1>ملخص محاضرات أساسيات علم المكتبات</h1>
@@ -751,6 +755,7 @@ const quizData = {
     },
     'scientific_research_methodology': {
         name: "منهجية و تقنيات البحث العلمي في العلوم الانسانية",
+        specialization: 'humanities', 
         icon: '<i class="fas fa-flask"></i>',
         semester: 2,
         summary: `
@@ -1134,6 +1139,7 @@ modules: {
     'algerian_history_s1_complete': {
     name: "تاريخ الجزائر العام",
     icon: '<i class="fas fa-landmark"></i>',
+    specialization: 'humanities', 
     semester: 2, 
     summary: `
     <h1>ملخص شامل: تاريخ الجزائر في العهد العثماني (1518-1830)</h1>
@@ -1436,6 +1442,7 @@ modules: {
 'humanities_fields_s2': {
     name: "مجالات العلوم الإنسانية",
     icon: '<i class="fas fa-university"></i>',
+    specialization: 'humanities', 
     semester: 2, 
     summary: `
     <h1>ملخصات شاملة لمقياس مجالات العلوم الإنسانية</h1>
@@ -1699,6 +1706,7 @@ modules: {
     'media_communication_intro': {
         name: "مدخل إلى وسائل الإعلام والاتصال",
         icon: '<i class="fas fa-broadcast-tower"></i>',
+        specialization: 'humanities', 
         semester: 2,
         summary: `
     <h1>ملخص شامل: مدخل إلى الإعلام والاتصال</h1>
@@ -1796,6 +1804,7 @@ modules: {
     'info_society_intro': {
         name:"مجتمع المعلومات ",
         icon: '<i class="fas fa-network-wired"></i>',
+        specialization: 'humanities', 
         semester: 1,
            summary: `
         <h2>ملخص شامل ومفصل لمقياس مجتمع المعلومات</h2>
@@ -2065,6 +2074,7 @@ modules: {
     'ancient_civilizations_expanded': {
     name: "مدخل إلى تاريخ الحضارات القديمة",
     icon: '<i class="fas fa-university"></i>',
+    specialization: 'humanities', 
     semester: 1,
     summary: `
     <h2>ملخص شامل ومفصل لمقياس مدخل إلى تاريخ الحضارات القديمة</h2>
@@ -2406,6 +2416,7 @@ modules: {
     'epistemology_human_sciences': {
     name: "إبستمولوجيا العلوم الإنسانية",
     icon: '<i class="fas fa-brain"></i>',
+    specialization: 'humanities', 
     semester: 1, 
     summary: `
         <h2>مفهوم العلوم الإنسانية ونشأتها</h2>
@@ -2564,6 +2575,7 @@ modules: {
   'media_communication_s1': {
     name: "مدخل إلى الإعلام والاتصال",
     icon: '<i class="fas fa-satellite-dish"></i>',
+    specialization: 'humanities', 
     semester: 1, 
     summary: `
     <h2>المحور الأول: مفهوم الاتصال ونماذجه</h2>
@@ -2864,6 +2876,7 @@ modules: {
     'algerian_history_s2_complete': {
     name: "تاريخ الجزائر العام",
     icon: '<i class="fas fa-landmark"></i>',
+    specialization: 'humanities', 
     semester: 1,
     summary: `
     <h2>المحور الأول: جغرافية الجزائر وحضارات ما قبل التاريخ</h2>
@@ -3274,6 +3287,7 @@ modules: {
      'research_schools_methods': {
     name: "مدارس ومناهج البحث العلمي",
     icon: '<i class="fas-fa-book-open"></i>',
+    specialization: 'humanities', 
     semester: 1,
     summary: `
     <h1>ملخص شامل: مدارس ومناهج البحث العلمي في العلوم الإنسانية</h1>
@@ -3532,6 +3546,7 @@ modules: {
 'archaeology_s2_detailed': {
     name: "مدخل إلى علم الآثار",
     icon: '<i class="fas fa-search-location"></i>',
+    specialization: 'humanities', 
     semester: 1, 
     summary: `
     <h2>المحور الأول: تعريف ونشأة علم الآثار</h2>
@@ -3797,6 +3812,7 @@ modules: {
     'library_science_intro': {
     name: "مدخل إلى علم المكتبات",
     icon: '<i class="fas fa-book-reader"></i>',
+    specialization: 'humanities', 
     semester: 1, 
     summary: `
     <h2>المحور الأول: تاريخ المؤسسات الوثائقية</h2>
@@ -4966,7 +4982,7 @@ function renderInstituteScreen() {
         <h2>اختر تخصص</h2>
         <div class="card-list">
             <div class="card" onclick="showScreen('year')"><span>تخصص العلوم الإنسانية</span></div>
-            <div class="card locked"><span>تخصص العلوم الاجتماعية</span>${ICONS.lock}</div>
+            <div class="card" onclick="selectSpecialization('social_sciences')"><span>تخصص العلوم الاجتماعية</span></div>
             <div class="card locked"><span>تخصص الحقوق والعلوم السياسية</span>${ICONS.lock}</div>
             <div class="card locked"><span>تخصص العلوم والتكنولوجيا</span>${ICONS.lock}</div>
             <div class="card locked"><span>تخصص العلوم الاقتصادية</span>${ICONS.lock}</div>
