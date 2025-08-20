@@ -4386,7 +4386,7 @@ modules: {
 'philosophy_intro_s1': {
     name: "مدخل إلى علم الفلسفة",
     icon: '<i class="fas fa-lightbulb"></i>',
-    specialization: 'humanities',
+    specialization: 'social_sciences',
     semester: 1,
     summary: `
     <h1>ملخص شامل: مقياس مدخل إلى علم الفلسفة</h1>
