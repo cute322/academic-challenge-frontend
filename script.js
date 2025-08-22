@@ -4982,6 +4982,9 @@ async function handleAuthSubmit(mode) {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
     let username = '';
+    
+    const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : false;
+
     if (mode === 'register') {
         username = document.getElementById('auth-username').value;
     }
@@ -4989,7 +4992,11 @@ async function handleAuthSubmit(mode) {
     showToast(`جاري ${mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}...`, 3000, 'info');
 
     const endpoint = mode === 'login' ? 'login' : 'register';
-    const body = mode === 'login' ? { email, password } : { username, email, password };
+    
+    // === التعديل الثاني: أرسل قيمة "rememberMe" إلى الواجهة الخلفية ===
+    const body = mode === 'login' 
+        ? { email, password, rememberMe } // أضفنا rememberMe هنا
+        : { username, email, password };
 
     try {
         const response = await fetch(`https://academic-challenge-api.onrender.com/api/auth/${endpoint}`, {
