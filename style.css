@@ -1,4 +1,8 @@
-/* --- NEW PROFESSIONAL & ATTRACTIVE THEME --- */
+/* 
+ © 2025 Dalila Cherif Slimane — Tous droits réservés.
+ Ce code est propriétaire et confidentiel.
+ Voir le fichier LICENSE.md pour plus de détails.
+*/
 :root {
     /* Updated Color Palette */
     --color-bg-dark: #1e3a5f; /* Deep Blue */
@@ -846,25 +850,25 @@ tbody tr:hover {
     /* تعديل الألوان لتتناسب مع الخلفية الجديدة */
     color: #3a2e20; /* لون بني داكن للنص */
     border: 1px solid #c8b8a3; /* إطار بلون الورق القديم */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* ظل لإعطاء عمق */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
     
     padding: 40px;
-    border-radius: 5px; /* حواف حادة قليلاً لتبدو كورقة */
+    border-radius: 5px;
     text-align: right;
     width: 100%;
-    max-width: 800px; /* تحديد عرض مناسب للقراءة */
-    margin: 20px auto; /* توسيط الشاشة */
+    max-width: 800px; 
+    margin: 20px auto; 
 }
 
 .lecture-summary {
-    line-height: 2.2; /* مسافة أكبر بين السطور لراحة العين */
+    line-height: 2.2;
     font-size: 1.1rem;
     margin-bottom: 30px;
 }
 
 .lecture-summary h1, .lecture-summary h2, .lecture-summary h3 {
-    color: #5a4732; /* لون أغمق للعناوين */
-    font-family: 'Cairo', sans-serif; /* استخدام خط مميز للعناوين */
+    color: #5a4732; 
+    font-family: 'Cairo', sans-serif; 
     margin-top: 25px;
     margin-bottom: 15px;
     border-bottom: 2px solid rgba(90, 71, 50, 0.2);
@@ -876,11 +880,11 @@ tbody tr:hover {
 }
 
 .lecture-summary strong {
-    color: #8a0303; /* لون أحمر داكن للكلمات الهامة */
+    color: #8a0303; 
     font-weight: 700;
 }
 
 .lecture-summary ul {
-    list-style-position: inside; /* لجعل نقاط القائمة داخل النص */
-    padding-right: 20px; /* مسافة بادئة للقائمة */
+    list-style-position: inside; 
+    padding-right: 20px; 
 }
