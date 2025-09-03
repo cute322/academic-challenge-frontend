@@ -1,6 +1,18 @@
 // © 2025 Dalila Cherif Slimane — Tous droits réservés.
 // Ce code est propriétaire et confidentiel.
 // Voir le fichier LICENSE.md pour plus de détails.
+const firebaseConfig = {
+  apiKey: "AIzaSyCDRQX5FVOMasYR7-zv4V7tgh9wtNx80Ws",
+  authDomain: "academic-challenge.firebaseapp.com",
+  projectId: "academic-challenge",
+  storageBucket: "academic-challenge.firebasestorage.app",
+  messagingSenderId: "211628847983",
+  appId: "1:211628847983:web:8f14f28a4d4217bf036e9a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', initializeApp);
 
@@ -5516,11 +5528,8 @@ async function handleAuthSubmit(mode) {
 function updateHeaderForUser() {
     const userProfileItem = document.getElementById('user-profile');
     if (gameState.currentUser) {
-        userProfileItem.innerHTML = `${ICONS.user}<span>${gameState.currentUser.username}</span>`; // تصحيح هنا
+        userProfileItem.innerHTML = `${ICONS.user}<span>${gameState.currentUser.username}</span>`;
         userProfileItem.onclick = showUserProfile;
-    } else {
-        userProfileItem.innerHTML = `${ICONS.user}<span>تسجيل الدخول</span>`;
-        userProfileItem.onclick = () => showAuthModal('login');
     }
     document.querySelector('#user-level').innerHTML = `${ICONS.level}<span>المستوى ${gameState.userLevel}</span>`;
     document.getElementById('academic-points').innerHTML = `${ICONS.points}<span>${gameState.totalAcademicPoints}</span>`;
@@ -5700,20 +5709,15 @@ function showUserProfile() {
         : ''; // إذا لم يكن مشرفاً، لا تضف أي شيء
     // --- END: NEW CODE ---
 
-    screens.userProfile.innerHTML = `
+screens.userProfile.innerHTML = `
         <h2>الملف الشخصي</h2>
         <div class="card-list" style="grid-template-columns: 1fr;">
-            <div class="card"><span>البريد الإلكتروني:</span> <span>${gameState.currentUser.email}</span></div>
             <div class="card"><span>الاسم:</span> <span>${gameState.currentUser.username}</span></div>
             <div class="card"><span>المستوى الأكاديمي:</span> <span>${gameState.userLevel}</span></div>
             <div class="card"><span>النقاط الأكاديمية:</span> <span>${gameState.totalAcademicPoints}</span></div>
-            
-            ${adminButtonHTML} <!-- هنا سيتم وضع زر المشرف (أو سيترك فارغاً) -->
-
             <div class="card" onclick="showCommentsModal()"><span>التعليقات والملاحظات</span> ${ICONS.comment}</div>
             <div class="card" onclick="renderLeaderboardScreen()"><span>لوحة المتصدرين</span> ${ICONS.leaderboard}</div>
-            <button class="btn" onclick="logoutUser()">تسجيل الخروج</button>
-            <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268); margin-top: 15px;" onclick="showScreen('institute')">العودة للرئيسية</button>
+            <button class="btn" style="background: linear-gradient(45deg, #6c757d, #5a6268);" onclick="showScreen('institute')">العودة للرئيسية</button>
         </div>
     `;
     showScreen('userProfile');
@@ -5813,14 +5817,12 @@ function renderUserErrorsScreen() {
 // --- New Leaderboard Screen ---
 async function renderLeaderboardScreen() {
     showScreen('leaderboard');
-    const leaderboardScreen = document.getElementById('leaderboard-screen');
-    leaderboardScreen.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل لوحة المتصدرين...</h2>`;
+    screens.leaderboard.innerHTML = `<h2><i class="fas fa-spinner fa-spin"></i> جاري تحميل لوحة المتصدرين...</h2>`;
     try {
-        const response = await fetch('https://academic-challenge-api.onrender.com/api/users/leaderboard');
-        const topUsers = await response.json();
-        if (!response.ok) throw new Error('فشل تحميل البيانات');
+        const snapshot = await db.collection('users').orderBy('academic_points', 'desc').limit(10).get();
+        const topUsers = snapshot.docs.map(doc => doc.data());
 
-        leaderboardScreen.innerHTML = `
+        screens.leaderboard.innerHTML = `
             <h2>${ICONS.leaderboard} لوحة المتصدرين</h2>
             <div class="leaderboard-list">
                 ${topUsers.map((user, index) => `
@@ -5837,19 +5839,15 @@ async function renderLeaderboardScreen() {
             <button class="btn" onclick="showUserProfile()">العودة للملف الشخصي</button>
         `;
     } catch (error) {
-        leaderboardScreen.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p>${error.message}</p></div>`;
+        screens.leaderboard.innerHTML = `<div style="text-align: center;"><h2>خطأ</h2><p>${error.message}</p></div>`;
     }
 }
 
 
 // --- Comments System (Frontend Mock) ---
 function showCommentsModal() {
-    if (!gameState.currentUser) {
-        showAuthModal('login');
-        return;
-    }
     commentsModal.classList.add('show');
-    renderComments(); // Display existing comments (mocked)
+    renderComments();
     submitCommentBtn.onclick = submitComment;
 }
 
@@ -5865,138 +5863,102 @@ let mockComments = [
 ];
 
 async function renderComments() {
-    commentsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">جاري تحميل التعليقات...</p>';
-    
+    commentsList.innerHTML = '<p>جاري تحميل التعليقات...</p>';
     try {
-        // Mocking backend call for comments
-        // In a real app, this would be:
-        // const response = await fetch('https://academic-challenge-api.onrender.com/api/comments');
-        // if (!response.ok) { throw new Error('فشل تحميل التعليقات'); }
-        // const comments = await response.json();
-        const comments = [...mockComments].reverse(); // Display newest first for mock
-
-        commentsList.innerHTML = ''; // Clear the list before adding new comments
-
+        const snapshot = await db.collection('comments').orderBy('createdAt', 'desc').limit(20).get();
+        const comments = snapshot.docs.map(doc => doc.data());
+        
         if (comments.length === 0) {
-            commentsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">لا توجد تعليقات بعد. كن أول من يضيف تعليقاً!</p>';
+            commentsList.innerHTML = '<p>لا توجد تعليقات بعد.</p>';
             return;
         }
-
-        comments.forEach(comment => {
-            const commentDiv = document.createElement('div');
-            commentDiv.className = 'comment-card';
-            commentDiv.innerHTML = `
-                <p><strong>${comment.author_username || 'مستخدم'}:</strong> ${comment.content}</p>
-                <span>${new Date(comment.created_at).toLocaleString('ar-EG')}</span>
-            `;
-            commentsList.appendChild(commentDiv);
-        });
         
-        commentsList.scrollTop = commentsList.scrollHeight; // Scroll to bottom
-
+        commentsList.innerHTML = comments.map(comment => `
+            <div class="comment-card">
+                <p><strong>${comment.username || 'لاعب مجهول'}:</strong> ${comment.content}</p>
+                <span>${new Date(comment.createdAt.toDate()).toLocaleString('ar-EG')}</span>
+            </div>
+        `).join('');
     } catch (error) {
-        commentsList.innerHTML = `<p style="text-align: center; color: var(--color-error);">خطأ: ${error.message}</p>`;
-        console.error('Error fetching comments:', error);
+        commentsList.innerHTML = `<p style="color: red;">خطأ في تحميل التعليقات.</p>`;
     }
 }
 
 async function updateUserProgressOnServer() {
-    // تأكد من وجود مستخدم مسجل دخول
     if (!gameState.currentUser) return;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.error("Token not found. Cannot update progress.");
-        return;
-    }
-
     try {
-        // --- START: REAL BACKEND CODE ---
-        const response = await fetch('https://academic-challenge-api.onrender.com/api/users/progress', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-auth-token': token
-            },
-            body: JSON.stringify({
-                academic_points: gameState.totalAcademicPoints,
-                level: gameState.userLevel,
-                unlocked_modules: gameState.unlockedModules
-            })
+        const userRef = db.collection('users').doc(gameState.currentUser.uid);
+        await userRef.update({
+            academic_points: gameState.totalAcademicPoints,
+            level: gameState.userLevel,
+            unlocked_modules: gameState.unlockedModules
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || "Failed to update progress on server.");
-        }
-        
-        console.log("User progress successfully saved to the server.");
-        showToast("تم حفظ تقدمك بنجاح!", 2000, 'success');
-        // --- END: REAL BACKEND CODE ---
-
+        console.log("تم تحديث التقدم في Firestore بنجاح.");
     } catch (error) {
-        console.error("Error saving user progress:", error);
-        showToast(`خطأ: ${error.message}`, 4000, 'error');
+        console.error("خطأ في تحديث التقدم:", error);
     }
 }
 
 async function submitComment() {
     const commentText = newCommentText.value.trim();
-    if (!commentText) {
-        showToast('الرجاء كتابة تعليق قبل الإرسال.', 2000, 'error');
-        return;
-    }
-
-    if (!gameState.currentUser) {
-        showToast('الرجاء تسجيل الدخول لإضافة تعليق.', 3000, 'error');
-        closeCommentsModal();
-        showAuthModal('login');
-        return;
-    }
+    if (!commentText) return;
 
     try {
-        // Mocking backend call for comment submission
-        const newComment = {
-            author_username: gameState.currentUser.name,
+        await db.collection('comments').add({
+            uid: gameState.currentUser.uid,
+            username: gameState.currentUser.username,
             content: commentText,
-            created_at: new Date().toISOString()
-        };
-        mockComments.push(newComment);
-        
-        // In a real app:
-        /*
-        const token = localStorage.getItem('token');
-        const response = await fetch('https://academic-challenge-api.onrender.com/api/comments', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-auth-token': token
-            },
-            body: JSON.stringify({ content: commentText })
+            createdAt: new Date()
         });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'فشل إرسال التعليق');
-        }
-        */
-
-        newCommentText.value = ''; // Clear input field
+        newCommentText.value = '';
         showToast('تم إرسال تعليقك بنجاح!', 3000, 'success');
-        
-        await renderComments(); // Reload comments to show the new one
-
+        renderComments();
     } catch (error) {
-        showToast(`خطأ: ${error.message}`, 4000, 'error');
-        console.error('Error submitting comment:', error);
+        showToast('فشل إرسال التعليق.', 3000, 'error');
     }
-    saveGameState(); // Save state after comment submission
 }
 
 
 // --- Core App Logic (Remains largely the same, with minor adjustments) ---
 function initializeApp() {
-    checkLoggedIn(); // بدلاً من إظهار شاشة الترحيب، تحقق أولاً من حالة تسجيل الدخول
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            // المستخدم مسجل دخوله (بشكل مجهول)
+            gameState.currentUser = { uid: user.uid, username: 'لاعب مجهول' };
+
+            const userRef = db.collection('users').doc(user.uid);
+            const userDoc = await userRef.get();
+
+            if (userDoc.exists) {
+                // بيانات اللاعب موجودة، قم بتحميلها
+                const userData = userDoc.data();
+                gameState.totalAcademicPoints = userData.academic_points || 0;
+                gameState.userLevel = userData.level || 1;
+                gameState.unlockedModules = userData.unlocked_modules || [];
+                gameState.currentUser.username = userData.username || 'لاعب مجهول';
+            } else {
+                // لاعب جديد، قم بإنشاء بيانات له
+                const newUsername = 'لاعب مجهول ' + Math.floor(Math.random() * 1000);
+                await userRef.set({
+                    username: newUsername,
+                    academic_points: 0,
+                    level: 1,
+                    unlocked_modules: [],
+                    createdAt: new Date()
+                });
+                gameState.currentUser.username = newUsername;
+            }
+
+            updateHeaderForUser();
+            showScreen('institute');
+        } else {
+            // لا يوجد مستخدم، قم بتسجيل دخوله مجهولاً
+            auth.signInAnonymously().catch((error) => {
+                console.error("فشل تسجيل الدخول المجهول:", error);
+                alert("حدث خطأ في الاتصال، يرجى تحديث الصفحة.");
+            });
+        }
+    });
 }
 
 function saveGameState() {
