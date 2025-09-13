@@ -8,8 +8,8 @@ const firebaseConfig = {
   storageBucket: "academic-challenge.firebasestorage.app",
   messagingSenderId: "211628847983",
   appId: "1:211628847983:web:8f14f28a4d4217bf036e9a"
-};
-
+}; 
+ 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -5472,56 +5472,86 @@ function closeAuthModal() {
 }
 
 async function handleAuthSubmit(mode) {
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
-    let username = '';
-
-    const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : false;
-
-    if (mode === 'register') {
-        username = document.getElementById('auth-username').value;
-    }
+    const email = authEmailInput.value;
+    const password = authPasswordInput.value;
 
     showToast(`جاري ${mode === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}...`, 3000, 'info');
 
-    const endpoint = mode === 'login' ? 'login' : 'register';
-    
-    // === التعديل الثاني: أرسل قيمة "rememberMe" إلى الواجهة الخلفية ===
-    const body = mode === 'login' 
-        ? { email, password, rememberMe } // أضفنا rememberMe هنا
-        : { username, email, password };
-
     try {
-        const response = await fetch(`https://academic-challenge-api.onrender.com/api/auth/${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'حدث خطأ ما');
+        if (mode === 'register') {
+            // --- قسم إنشاء حساب جديد ---
+            const username = document.getElementById('auth-username').value;
+            if (!username) {
+                showToast('الرجاء إدخال اسم المستخدم.', 3000, 'error');
+                return;
+            }
 
-        localStorage.setItem('token', data.token);
-        gameState.currentUser = data.user;
-        
-        if (mode === 'login') {
-            gameState.totalAcademicPoints = data.user.academic_points;
-            gameState.userLevel = data.user.level;
-            gameState.unlockedModules = data.user.unlocked_modules || [];
-        } else {
+            // 1. إنشاء المستخدم في خدمة المصادقة (Authentication)
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // 2. حفظ بيانات المستخدم الإضافية في قاعدة بيانات Firestore
+            await db.collection('users').doc(user.uid).set({
+                username: username,
+                email: email,
+                role: 'student', // دور المستخدم الافتراضي
+                academic_points: 0,
+                level: 1,
+                unlocked_modules: [],
+                createdAt: new Date()
+            });
+
+            // 3. تحديث حالة التطبيق بالبيانات الجديدة
+            gameState.currentUser = { uid: user.uid, username: username, role: 'student' };
             gameState.totalAcademicPoints = 0;
             gameState.userLevel = 1;
             gameState.unlockedModules = [];
-        }
-        
-        gameState.isDeveloper = (data.user.role === 'developer');
+            gameState.isDeveloper = false;
 
-        showToast(mode === 'login' ? `أهلاً بك مرة أخرى ${data.user.username}!` : 'تم إنشاء حسابك بنجاح!', 3000, 'success');
+            showToast(`تم إنشاء حسابك بنجاح! أهلاً بك ${username}`, 3000, 'success');
+
+        } else {
+            // --- قسم تسجيل الدخول ---
+
+            // 1. تسجيل دخول المستخدم عبر خدمة المصادقة
+            const userCredential = await auth.signInWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // 2. جلب بيانات المستخدم من قاعدة بيانات Firestore
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (!userDoc.exists) {
+                throw new Error("لم يتم العثور على بيانات هذا المستخدم.");
+            }
+            const userData = userDoc.data();
+
+            // 3. تحديث حالة التطبيق بالبيانات التي تم جلبها
+            gameState.currentUser = { uid: user.uid, username: userData.username, role: userData.role };
+            gameState.totalAcademicPoints = userData.academic_points;
+            gameState.userLevel = userData.level;
+            gameState.unlockedModules = userData.unlocked_modules || [];
+            gameState.isDeveloper = (userData.role === 'developer');
+
+            showToast(`أهلاً بعودتك ${userData.username}!`, 3000, 'success');
+        }
+
         closeAuthModal();
         updateHeaderForUser();
         showScreen('institute');
 
     } catch (error) {
-        showToast(`فشل: ${error.message}`, 4000, 'error');
+        // عرض رسائل خطأ واضحة للمستخدم
+        let errorMessage = 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = 'هذا البريد الإلكتروني مستخدم بالفعل.';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMessage = 'كلمة المرور غير صحيحة.';
+        } else if (error.code === 'auth/user-not-found') {
+            errorMessage = 'لا يوجد حساب بهذا البريد الإلكتروني.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'صيغة البريد الإلكتروني غير صحيحة.';
+        }
+        showToast(`فشل: ${errorMessage}`, 4000, 'error');
+        console.error("Firebase Auth Error:", error);
     }
 }
 
@@ -5723,25 +5753,24 @@ screens.userProfile.innerHTML = `
     showScreen('userProfile');
 }
 function logoutUser() {
-    // Save current user state to mockUsers before logging out (for persistence in mock)
-    if (gameState.currentUser) {
-        const userIndex = gameState.mockUsers.findIndex(u => u.id === gameState.currentUser.id);
-        if (userIndex !== -1) {
-            gameState.mockUsers[userIndex].academicPoints = gameState.totalAcademicPoints;
-            gameState.mockUsers[userIndex].level = gameState.userLevel;
-            gameState.mockUsers[userIndex].unlockedModules = [...gameState.unlockedModules];
-        }
-    }
-
-    gameState.currentUser = null;
-    gameState.isDeveloper = false;
-    gameState.totalAcademicPoints = 0;
-    gameState.userLevel = 1;
-    gameState.unlockedModules = []; // Reset unlocked modules for a new session
-    localStorage.removeItem('token'); // Clear token on logout
-    updateHeaderForUser();
-    showToast('تم تسجيل الخروج بنجاح.', 3000, 'info');
-    showScreen('welcome');
+    auth.signOut().then(() => {
+        // إعادة تعيين حالة التطبيق بعد تسجيل الخروج
+        gameState.currentUser = null;
+        gameState.isDeveloper = false;
+        gameState.totalAcademicPoints = 0;
+        gameState.userLevel = 1;
+        gameState.unlockedModules = [];
+        
+        // لا نحتاج لحذف التوكن يدوياً، Firebase تتكفل بذلك
+        // localStorage.removeItem('token'); 
+        
+        updateHeaderForUser(); // سيقوم بتحديث الشريط العلوي لحالة "غير مسجل"
+        showToast('تم تسجيل الخروج بنجاح.', 3000, 'info');
+        showScreen('welcome');
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+        showToast('حدث خطأ أثناء تسجيل الخروج.', 3000, 'error');
+    });
 }
 
 // --- Developer Dashboard (Frontend Mock) ---
